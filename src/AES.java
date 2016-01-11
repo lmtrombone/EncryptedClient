@@ -1,16 +1,26 @@
-import java.io.*;
-import java.security.*;
-import javax.crypto.*;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import sun.misc.BASE64Encoder;
+
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 public class AES
 {
-	//Need to install JCE Unlimited Strength Jurisdiction if AES key is 192 or 256
 	//May need to generate new IV for each keyword
-	public static final int AES_KEY_LENGTH = 128;
-	private static SecretKey secretKey = null;
+	public static final int AES_KEY_LENGTH = 256;
+	public static SecretKey secretKey;
 	private static byte[] IV; 
 	
 	//Generates a 128 bit AES key
@@ -32,10 +42,10 @@ public class AES
 		try{
 			//generates Initialization Vector (IV)
 			//SecureRandom initializes IV to some random bits using SHA1PRNG algorithm
-			IV = new byte[AES_KEY_LENGTH/8];
+			IV = new byte[AES_KEY_LENGTH/16];
 			SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
 			prng.nextBytes(IV);
-			System.out.println("Initialization Vector in byte format: " + IV);
+			System.out.println("Initialization Vector: " + Arrays.toString(IV));
 			
 			//creates an instance of Cipher for encryption
 			//AES and CBC encryption with padding
@@ -47,11 +57,13 @@ public class AES
 			
 			//encrypts the data
 			byte[] byteDataToEncrypt = keyWord.getBytes();
-			System.out.println("Data to encrypt in byte format: " + byteDataToEncrypt);
+			System.out.println("Data to encrypt: " + Arrays.toString(byteDataToEncrypt));
 			
 			byte[] byteCipherText = aesCipher.doFinal(byteDataToEncrypt);
-			System.out.println("Ciphertext in byte format: " + byteCipherText);
+			System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
 			
+			//Base64Encoder converts to 24 byte string
+			//should be acceptable, but converting to 16 byte string preferable
 			strCipherText = new BASE64Encoder().encode(byteCipherText);	
 		}
 		
@@ -93,10 +105,10 @@ public class AES
 			
 			//decrypts the data
 			byte[] byteDataToDecrypt = new BASE64Decoder().decodeBuffer(cipherText);
-			System.out.println("Data to decrypt in byte format: " + byteDataToDecrypt);
+			System.out.println("Data to decrypt: " + Arrays.toString(byteDataToDecrypt));
 			
 			byte[] bytePlainText = aesCipher.doFinal(byteDataToDecrypt);
-			System.out.println("Plaintext in byte format: " + bytePlainText);
+			System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
 			
 			strPlainText = new String(bytePlainText);
 		}
@@ -131,10 +143,6 @@ public class AES
 		
 		return strPlainText;
 	}
-
-	public SecretKey getSecretKey(){
-		return secretKey;
-	}
 	
 	public byte[] getIV(){
 		return IV;
@@ -144,20 +152,19 @@ public class AES
 	public static void main(String[] args) {
 		try{
 			int maxKeyLen = Cipher.getMaxAllowedKeyLength("AES");
-			System.out.println("Max key length: " + maxKeyLen);
+			System.out.println("Max supported key length: " + maxKeyLen);
 		}
 		catch(NoSuchAlgorithmException noSuchAlgorithm){
 			System.out.println("No such algorithm exists: " + noSuchAlgorithm);
 		}
 		
-		AES aes = new AES();
-		
 		//generates AES key and prints it
 		generateAESEncryptionKey();
-		SecretKey secretKey = aes.getSecretKey();
-		System.out.println("Secret key: " + secretKey);
+		SecretKey secretKey = AES.secretKey;
+		byte[] key = secretKey.getEncoded();
+		System.out.println("Secret key: " + Arrays.toString(key));
 		
-		//encrypts ciphertext and prints it
+		//encrypts plaintext and prints it
 		String cipherText = AESEncryption(secretKey, "TestData");
 		System.out.println("Ciphertext generated using AES encryption is: " + cipherText);
 		
