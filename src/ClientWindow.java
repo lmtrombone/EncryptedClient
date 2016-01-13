@@ -1,23 +1,27 @@
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
+
+import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JTextArea;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import javax.swing.JTabbedPane;
-import javax.swing.JPanel;
-import javax.swing.JList;
 
 public class ClientWindow {
 
@@ -40,8 +44,10 @@ public class ClientWindow {
 	private JTextArea outputLog;
 	private JTextField textField;
 	private JButton btnSearch;
-	private JList list;
+	private JList<String> list;
 	private JButton btnDownload;
+	
+	private DefaultListModel<String> searchResults;
 
 	/**
 	 * Launch the application.
@@ -109,6 +115,23 @@ public class ClientWindow {
 				keyFile.setText("Key was generated (not really...)");
 			}
 		});
+		
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				searchResults.addElement("Some result");
+			}
+		});
+		
+		btnDownload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (list.getSelectedIndex() >= 0) {
+					JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
+				} else {
+					// maybe produce an error message
+					System.out.println("No file selected");
+				}
+			}
+		});
 	}
 	
 	public void writeLog(String str) {
@@ -128,7 +151,7 @@ public class ClientWindow {
 		frame.getContentPane().add(tabbedPane, "cell 0 0 1 4,grow");
 		
 		uploadPanel = new JPanel();
-		tabbedPane.addTab("Upload", null, uploadPanel, null);
+		tabbedPane.addTab("Upload", null, uploadPanel, "Upload");
 		uploadPanel.setLayout(new MigLayout("", "[fill][grow,fill][fill]", "[fill][][][][fill][grow,fill][fill]"));
 		
 		JLabel lblNewLabel = new JLabel("Path:");
@@ -166,9 +189,10 @@ public class ClientWindow {
 		
 		btnKeygen = new JButton("Keygen");
 		uploadPanel.add(btnKeygen, "cell 2 6");
+		uploadPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{lblNewLabel, filePath, browseButton, scrollPane, outputLog, encryptButton, decryptButton, uploadButton, idkButton, keyFile, btnKeygen}));
 		
 		searchPanel = new JPanel();
-		tabbedPane.addTab("Search", null, searchPanel, null);
+		tabbedPane.addTab("Search", null, searchPanel, "Search");
 		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
 		
 		textField = new JTextField();
@@ -178,7 +202,9 @@ public class ClientWindow {
 		btnSearch = new JButton("Search");
 		searchPanel.add(btnSearch, "cell 1 0");
 		
-		list = new JList();
+		list = new JList<>();
+		searchResults = new DefaultListModel<>();
+		list.setModel(searchResults);
 		searchPanel.add(list, "cell 0 1 1 2,grow");
 		
 		btnDownload = new JButton("Download");
