@@ -1,5 +1,3 @@
-package src;
-
 import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,21 +13,35 @@ import javax.swing.JTextPane;
 
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextArea;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JTabbedPane;
+import javax.swing.JPanel;
+import javax.swing.JList;
 
 public class ClientWindow {
 
 	private JFrame frame;
 	private JTextField filePath;
-	private JTextArea outputLog;
 	private JButton browseButton;
 	private JButton encryptButton;
 	private JButton decryptButton;
 	private JButton uploadButton;
 	private JButton idkButton;
-	private JScrollPane scrollPane;
 	private JFileChooser fileChooser;
 	
 	private File selectedFile;
+	private JTextField keyFile;
+	private JButton btnKeygen;
+	private JTabbedPane tabbedPane;
+	private JPanel uploadPanel;
+	private JPanel searchPanel;
+	private JScrollPane scrollPane;
+	private JTextArea outputLog;
+	private JTextField textField;
+	private JButton btnSearch;
+	private JList list;
+	private JButton btnDownload;
 
 	/**
 	 * Launch the application.
@@ -91,6 +103,12 @@ public class ClientWindow {
 				writeLog("Uploading file...\nThis doesn't even work.");
 			}
 		});
+		
+		btnKeygen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				keyFile.setText("Key was generated (not really...)");
+			}
+		});
 	}
 	
 	public void writeLog(String str) {
@@ -104,37 +122,66 @@ public class ClientWindow {
 		frame = new JFrame("Client");
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new MigLayout("", "[pref!,grow][grow][pref!,fill]", "[fill][][][][][grow]"));
+		frame.getContentPane().setLayout(new MigLayout("", "[grow]", "[grow][grow,fill][][]"));
+		
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		frame.getContentPane().add(tabbedPane, "cell 0 0 1 4,grow");
+		
+		uploadPanel = new JPanel();
+		tabbedPane.addTab("Upload", null, uploadPanel, null);
+		uploadPanel.setLayout(new MigLayout("", "[fill][grow,fill][fill]", "[fill][][][][fill][grow,fill][fill]"));
 		
 		JLabel lblNewLabel = new JLabel("Path:");
-		frame.getContentPane().add(lblNewLabel, "cell 0 0,alignx trailing");
+		uploadPanel.add(lblNewLabel, "cell 0 0");
 		
 		filePath = new JTextField();
-		frame.getContentPane().add(filePath, "cell 1 0,growx");
+		uploadPanel.add(filePath, "cell 1 0");
 		filePath.setColumns(10);
 		
 		browseButton = new JButton("Browse...");
-		frame.getContentPane().add(browseButton, "cell 2 0");
+		uploadPanel.add(browseButton, "cell 2 0");
 		
 		scrollPane = new JScrollPane();
-		frame.getContentPane().add(scrollPane, "cell 0 1 2 5,grow");
+		uploadPanel.add(scrollPane, "cell 0 1 2 5,grow");
 		
 		outputLog = new JTextArea();
-		outputLog.setEditable(false);
 		scrollPane.setViewportView(outputLog);
 		
 		encryptButton = new JButton("Encrypt");
-		frame.getContentPane().add(encryptButton, "cell 2 1,aligny top");
+		uploadPanel.add(encryptButton, "cell 2 1");
 		
 		decryptButton = new JButton("Decrypt");
-		frame.getContentPane().add(decryptButton, "cell 2 2");
+		uploadPanel.add(decryptButton, "cell 2 2");
 		
 		uploadButton = new JButton("Upload");
-		frame.getContentPane().add(uploadButton, "cell 2 3");
+		uploadPanel.add(uploadButton, "cell 2 3");
 		
 		idkButton = new JButton("idk");
+		uploadPanel.add(idkButton, "cell 2 4");
 		idkButton.setEnabled(false);
-		frame.getContentPane().add(idkButton, "cell 2 4");
+		
+		keyFile = new JTextField();
+		uploadPanel.add(keyFile, "cell 0 6 2 1,growx");
+		keyFile.setColumns(10);
+		
+		btnKeygen = new JButton("Keygen");
+		uploadPanel.add(btnKeygen, "cell 2 6");
+		
+		searchPanel = new JPanel();
+		tabbedPane.addTab("Search", null, searchPanel, null);
+		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
+		
+		textField = new JTextField();
+		searchPanel.add(textField, "flowx,cell 0 0,growx");
+		textField.setColumns(10);
+		
+		btnSearch = new JButton("Search");
+		searchPanel.add(btnSearch, "cell 1 0");
+		
+		list = new JList();
+		searchPanel.add(list, "cell 0 1 1 2,grow");
+		
+		btnDownload = new JButton("Download");
+		searchPanel.add(btnDownload, "cell 1 1");
 	}
-
 }
