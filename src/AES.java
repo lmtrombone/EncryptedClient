@@ -2,7 +2,9 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
@@ -12,10 +14,12 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
+//TODO: look into == in ciphertext
 public class AES
 {
 	//May need to generate new IV for each keyword
@@ -28,7 +32,8 @@ public class AES
 		try{
 			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 			keyGen.init(AES_KEY_LENGTH); 
-			secretKey = keyGen.generateKey(); 
+			//secretKey = keyGen.generateKey();
+			secretKey =  new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, 0, 16, "AES");
 		}
 		
 		catch(NoSuchAlgorithmException nosuchAlgo){
@@ -42,10 +47,11 @@ public class AES
 		try{
 			//generates Initialization Vector (IV)
 			//SecureRandom initializes IV to some random bits using SHA1PRNG algorithm
-			IV = new byte[AES_KEY_LENGTH/16];
-			SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
-			prng.nextBytes(IV);
-			System.out.println("Initialization Vector: " + Arrays.toString(IV));
+			IV = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+			//IV = new byte[AES_KEY_LENGTH/16];
+			//SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
+			//prng.nextBytes(IV);
+			//System.out.println("Initialization Vector: " + Arrays.toString(IV));
 			
 			//creates an instance of Cipher for encryption
 			//AES and CBC encryption with padding
@@ -57,10 +63,10 @@ public class AES
 			
 			//encrypts the data
 			byte[] byteDataToEncrypt = keyWord.getBytes();
-			System.out.println("Data to encrypt: " + Arrays.toString(byteDataToEncrypt));
+			//System.out.println("Data to encrypt: " + Arrays.toString(byteDataToEncrypt));
 			
 			byte[] byteCipherText = aesCipher.doFinal(byteDataToEncrypt);
-			System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
+			//System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
 			
 			//Base64Encoder converts to 24 byte string
 			//should be acceptable, but converting to 16 byte string preferable
@@ -89,7 +95,11 @@ public class AES
 		
 		catch(BadPaddingException badPadding){
 			System.out.println("Bad padding: " + badPadding);
-		}
+		} 
+		
+		//catch (NoSuchProviderException noSuchProvider) {
+			//System.out.println("No such provider: "+ noSuchProvider);
+		//}
 		
 		return strCipherText;
 	}
@@ -105,10 +115,10 @@ public class AES
 			
 			//decrypts the data
 			byte[] byteDataToDecrypt = new BASE64Decoder().decodeBuffer(cipherText);
-			System.out.println("Data to decrypt: " + Arrays.toString(byteDataToDecrypt));
+			//System.out.println("Data to decrypt: " + Arrays.toString(byteDataToDecrypt));
 			
 			byte[] bytePlainText = aesCipher.doFinal(byteDataToDecrypt);
-			System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
+			//System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
 			
 			strPlainText = new String(bytePlainText);
 		}

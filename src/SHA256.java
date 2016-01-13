@@ -8,23 +8,23 @@ import javax.crypto.spec.SecretKeySpec;
 
 import sun.misc.BASE64Encoder;
 
-public class HMACSHA256{
+public class SHA256{
 	
-	//creates an AES key using another AES key and keyWord
+	//creates an AES key using SHA256
 	public static SecretKey createIndexingKey(SecretKey secretKey, String keyWord){
 		SecretKey indexingKey = null;
 		try{
-			//constructs a key for HMACSHA256
+			//constructs a key for SHA256
 			byte[] key = secretKey.getEncoded();
 			SecretKeySpec keySpec = new SecretKeySpec(key, "HmacSHA256");
-			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-			sha256_HMAC.init(keySpec);
+			Mac sha256 = Mac.getInstance("HmacSHA256");
+			sha256.init(keySpec);
 			
 			//hashes keyWord and stores in result
-			byte[] result = sha256_HMAC.doFinal(keyWord.getBytes());
+			byte[] result = sha256.doFinal(keyWord.getBytes());
 
+			//creates AES key using result of SHA256
 			indexingKey = new SecretKeySpec(result, 0, result.length, "AES");
-			System.out.println(result.length);
 		}
 		
 		catch(NoSuchAlgorithmException nosuchAlgo){

@@ -19,8 +19,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.eclipse.wb.swing.FocusTraversalOnArray;
-
 import net.miginfocom.swing.MigLayout;
 
 public class ClientWindow {
@@ -85,6 +83,7 @@ public class ClientWindow {
 	                selectedFile = fileChooser.getSelectedFile();
 	                filePath.setText(selectedFile.getAbsolutePath());
 	                writeLog("Selected file: " + selectedFile.getName());
+	                SSE.EDBSetup(selectedFile);
 	            }
 			}
 		});
@@ -100,6 +99,7 @@ public class ClientWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Decrypting file...\nThis doesn't even work.");
+				SSE.decryptFile(SSE.Tset);
 			}
 		});
 		
@@ -189,7 +189,6 @@ public class ClientWindow {
 		
 		btnKeygen = new JButton("Keygen");
 		uploadPanel.add(btnKeygen, "cell 2 6");
-		uploadPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{lblNewLabel, filePath, browseButton, scrollPane, outputLog, encryptButton, decryptButton, uploadButton, idkButton, keyFile, btnKeygen}));
 		
 		searchPanel = new JPanel();
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
