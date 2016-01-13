@@ -1,5 +1,4 @@
-//test implementation of AES/CTR
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;

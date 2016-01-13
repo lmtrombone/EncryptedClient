@@ -41,10 +41,10 @@ public class SSE{
 		kT = AES.secretKey;	
 		
 		byte[] keyS = SSE.kS.getEncoded();
-		System.out.println("Secret key kS: " + Arrays.toString(keyS));
+		System.out.println("Edbsetup Secret key kS: " + Arrays.toString(keyS));
 		
 		byte[] keyE = SSE.kE.getEncoded();
-		System.out.println("Secret key kE: " + Arrays.toString(keyE));
+		System.out.println("Edbsetup Secret key kE: " + Arrays.toString(keyE));
 		
 	}
 	
@@ -53,6 +53,7 @@ public class SSE{
 	//reads file and returns words in an array
 	public static String[] readandEncryptFile(File selectedFile, SecretKey secretKey){
 		String[] encryptedFileWords = null;
+		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
 		try{
 			FileReader file = new FileReader(selectedFile);
 			BufferedReader reader = new BufferedReader(file);
@@ -60,7 +61,8 @@ public class SSE{
 			String[] fileWords = line.split(" ");
 			encryptedFileWords = new String[fileWords.length];
 			for (int i = 0; i < fileWords.length; i++){
-				encryptedFileWords[i] = AES.AESEncryption(secretKey, fileWords[i]);
+				//encryptedFileWords[i] = AES.AESEncryption(secretKey, fileWords[i]);
+				encryptedFileWords[i] = securityHelper.encrypt(fileWords[i]);
 			}
 		}
 		
@@ -78,16 +80,18 @@ public class SSE{
 	//temp decrypt function
 	public static void decryptFile(HashMap<String, String> Tset){
 		String key, value;
+		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
 		for(Entry<String, String> entry: Tset.entrySet()){
 			System.out.println("key is: "+ entry.getKey() + " & Value is: " + entry.getValue());
 			
 			byte[] keyS = SSE.kS.getEncoded();
-			System.out.println("Secret key kS: " + Arrays.toString(keyS));
+			System.out.println("Secret key kS for decrypting: " + Arrays.toString(keyS));
 			
 			byte[] keyE = SSE.kE.getEncoded();
-			System.out.println("Secret key kE: " + Arrays.toString(keyE));
+			System.out.println("Secret key kE for decrypting: " + Arrays.toString(keyE));
 			
-			key = AES.AESDecryption(SSE.kS, entry.getKey());
+			//key = AES.AESDecryption(SSE.kS, entry.getKey());
+			key = securityHelper.decrypt(entry.getKey());
 			value = AES.AESDecryption(SSE.kE, entry.getValue());
 			System.out.println("key is: " + key + " and value is: " + value);
 		}
