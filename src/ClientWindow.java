@@ -185,3 +185,4 @@ public class ClientWindow {
 		searchPanel.add(btnDownload, "cell 1 1");
 	}
 }
+
