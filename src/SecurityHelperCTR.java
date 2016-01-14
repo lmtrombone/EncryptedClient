@@ -15,6 +15,7 @@ public class SecurityHelperCTR {
     // (e.g. use SecureRandom)
     private final SecretKey STATIC_SECRET_KEY = new SecretKeySpec(
             hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES");
+    public static SecretKey secretKey;
     private Cipher cipher;
 
     private static byte[] hexDecode(final String hex) {
@@ -52,7 +53,7 @@ public class SecurityHelperCTR {
         return iv;
     }
 
-    public String encrypt(final String secret) {
+    public String encrypt(final String secret, SecretKey secretKey) {
         final byte[] plaintext = secret.getBytes(UTF_8);
         final byte[] nonceAndCiphertext = new byte[NONCE_SIZE
                 + plaintext.length];
@@ -62,7 +63,7 @@ public class SecurityHelperCTR {
                 0, NONCE_SIZE, this.cipher.getBlockSize());
 
         try {
-            this.cipher.init(Cipher.ENCRYPT_MODE, this.STATIC_SECRET_KEY,
+            this.cipher.init(Cipher.ENCRYPT_MODE, secretKey,
                     nonceIV);
             offset += this.cipher.doFinal(plaintext, 0, plaintext.length,
                     nonceAndCiphertext, offset);
@@ -78,13 +79,13 @@ public class SecurityHelperCTR {
         }
     }
 
-    public String decrypt(final String encrypted) {
+    public String decrypt(final String encrypted, SecretKey secretKey) {
         final byte[] nonceAndCiphertext = DatatypeConverter
                 .parseBase64Binary(encrypted);
         final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
                 0, NONCE_SIZE, this.cipher.getBlockSize());
         try {
-            this.cipher.init(Cipher.DECRYPT_MODE, this.STATIC_SECRET_KEY,
+            this.cipher.init(Cipher.DECRYPT_MODE, secretKey,
                     nonceIV);
             final byte[] plaintext = this.cipher.doFinal(nonceAndCiphertext,
                     NONCE_SIZE, nonceAndCiphertext.length - NONCE_SIZE);
@@ -103,14 +104,14 @@ public class SecurityHelperCTR {
         final String secret1 = "dfdsfsf";
         final String secret2 = "jsrhdf";
         final SecurityHelperCTR securityHelper = new SecurityHelperCTR();
-        final String ct = securityHelper.encrypt(secret);
-        final String ct1 = securityHelper.encrypt(secret1);
-        final String ct2 = securityHelper.encrypt(secret2);
-        String pt = securityHelper.decrypt(ct);
-        System.out.println(pt);
-        pt = securityHelper.decrypt(ct1);
-        System.out.println(pt);
-        pt = securityHelper.decrypt(ct2);
-        System.out.println(pt);
+        //final String ct = securityHelper.encrypt(secret);
+        //final String ct1 = securityHelper.encrypt(secret1);
+        //final String ct2 = securityHelper.encrypt(secret2);
+        //String pt = securityHelper.decrypt(ct);
+        //System.out.println(pt);
+        //pt = securityHelper.decrypt(ct1);
+        //System.out.println(pt);
+        //pt = securityHelper.decrypt(ct2);
+        //System.out.println(pt);
     }
 }

@@ -13,23 +13,22 @@ import javax.crypto.spec.SecretKeySpec;
 //for now it's assumed only one file is being encrypted and stored
 public class SSE{
 	
-	public static SecretKey kS, kT, kE;
 	public static HashMap<String, String> Tset;
 	
-	public static void EDBSetup(File selectedFile){
-		
-		//generate AES key
-		AES.generateAESEncryptionKey();
-		kS = AES.secretKey;
+	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS){
 		
 		//TODO: Parse documents with indexing
 		
 		String[] encryptedFileWords = readandEncryptFile(selectedFile, kS);
+		SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 		Tset = new HashMap<String, String>();
 		for (int i = 0; i < encryptedFileWords.length; i++){
-			kE = SHA256.createIndexingKey(kS, encryptedFileWords[i]);
-			String encryptedIndex = AES.AESEncryption(kE, "1");
+			SecretKey kE = SHA256.createIndexingKey(kS, encryptedFileWords[i]);
+			
+			//for now uses same key to encrypt keywords
+			String encryptedIndex = securityHelperCTR.encrypt("1", kE);
 			Tset.put(encryptedFileWords[i], encryptedIndex);
+			
 		}
 		
 		for (Entry<String, String> entry : Tset.entrySet()) {
@@ -37,15 +36,13 @@ public class SSE{
 	    	System.out.println(entry.getValue());
 		}
 		
-		AES.generateAESEncryptionKey();
-		kT = AES.secretKey;	
+		//for now not used
+		//AES.generateAESEncryptionKey();
+		//kT = AES.secretKey;	
 		
-		byte[] keyS = SSE.kS.getEncoded();
-		System.out.println("Edbsetup Secret key kS: " + Arrays.toString(keyS));
+
 		
-		byte[] keyE = SSE.kE.getEncoded();
-		System.out.println("Edbsetup Secret key kE: " + Arrays.toString(keyE));
-		
+		return Tset;
 	}
 	
 	//TODO: Look into Kt
@@ -61,8 +58,7 @@ public class SSE{
 			String[] fileWords = line.split(" ");
 			encryptedFileWords = new String[fileWords.length];
 			for (int i = 0; i < fileWords.length; i++){
-				//encryptedFileWords[i] = AES.AESEncryption(secretKey, fileWords[i]);
-				encryptedFileWords[i] = securityHelper.encrypt(fileWords[i]);
+				encryptedFileWords[i] = securityHelper.encrypt(fileWords[i], secretKey);
 			}
 		}
 		
@@ -77,22 +73,17 @@ public class SSE{
 		return encryptedFileWords;
 	}
 	
-	//temp decrypt function
-	public static void decryptFile(HashMap<String, String> Tset){
+	//decrypts File
+	public static void decryptFile(HashMap<String, String> Tset, SecretKey kS){
 		String key, value;
 		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
+		SecretKey kE;
 		for(Entry<String, String> entry: Tset.entrySet()){
-			System.out.println("key is: "+ entry.getKey() + " & Value is: " + entry.getValue());
+			//System.out.println("key is: "+ entry.getKey() + " & Value is: " + entry.getValue());
+			kE = SHA256.createIndexingKey(kS, entry.getKey());
 			
-			byte[] keyS = SSE.kS.getEncoded();
-			System.out.println("Secret key kS for decrypting: " + Arrays.toString(keyS));
-			
-			byte[] keyE = SSE.kE.getEncoded();
-			System.out.println("Secret key kE for decrypting: " + Arrays.toString(keyE));
-			
-			//key = AES.AESDecryption(SSE.kS, entry.getKey());
-			key = securityHelper.decrypt(entry.getKey());
-			value = AES.AESDecryption(SSE.kE, entry.getValue());
+			key = securityHelper.decrypt(entry.getKey(), kS);
+			value = securityHelper.decrypt(entry.getValue(), kE);
 			System.out.println("key is: " + key + " and value is: " + value);
 		}
 	}

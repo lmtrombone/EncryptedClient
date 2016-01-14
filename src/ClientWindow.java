@@ -89,7 +89,7 @@ public class ClientWindow {
 	                selectedFile = fileChooser.getSelectedFile();
 	                filePath.setText(selectedFile.getAbsolutePath());
 	                writeLog("Selected file: " + selectedFile.getName());
-	                SSE.EDBSetup(selectedFile);
+	                SSE.EDBSetup(selectedFile, AES.secretKey);
 	            }
 			}
 		});
@@ -105,7 +105,7 @@ public class ClientWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Decrypting file...\nThis doesn't even work.");
-				SSE.decryptFile(SSE.Tset);
+				SSE.decryptFile(SSE.Tset, AES.secretKey);
 			}
 		});
 		
