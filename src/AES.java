@@ -2,9 +2,6 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.Security;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
@@ -19,13 +16,27 @@ import javax.crypto.spec.SecretKeySpec;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
-//TODO: look into == in ciphertext
+//TODO: look into == in ciphertext (Caused by base64 encoding)
+//http://serverfault.com/questions/358389/what-is-the-meaning-of-an-equal-sign-or-at-the-end-of-a-ssh-public-key/358391
 public class AES
 {
 	//May need to generate new IV for each keyword
 	public static final int AES_KEY_LENGTH = 256;
 	public static SecretKey secretKey;
-	private static byte[] IV; 
+	private static byte[] IV;
+	
+	// Generates and returns AES key
+	public static SecretKey generateKey() {
+		try {
+			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+			keyGen.init(AES_KEY_LENGTH);
+			
+			return keyGen.generateKey();
+		} catch (NoSuchAlgorithmException ex) {
+			// This should never happen?
+			return null;
+		}
+	}
 	
 	//Generates a 128 bit AES key
 	public static void generateAESEncryptionKey(){
