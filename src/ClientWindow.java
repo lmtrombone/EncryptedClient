@@ -9,7 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
@@ -46,7 +48,7 @@ public class ClientWindow {
 	private JPanel searchPanel;
 	private JScrollPane scrollPane;
 	private JTextArea outputLog;
-	private JTextField textField;
+	private JTextField queryField;
 	private JButton btnSearch;
 	private JList<String> list;
 	private JButton btnDownload;
@@ -185,6 +187,13 @@ public class ClientWindow {
 		
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				String[] keywords = queryField.getText().split(" +");
+				//post request
+				//result should be list of ind
+				List<String> inds = new ArrayList<>();
+				for (String i : inds) {
+					searchResults.addElement(i);
+				}
 				searchResults.addElement("Some result");
 			}
 		});
@@ -193,6 +202,31 @@ public class ClientWindow {
 			public void actionPerformed(ActionEvent e) {
 				if (list.getSelectedIndex() >= 0) {
 					JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
+					/*AWSCredentials credentials;
+			        try {
+			            credentials = new ProfileCredentialsProvider().getCredentials();
+			        } catch (Exception ex) {
+			            throw new AmazonClientException(
+			                    "Cannot load the credentials from the credential profiles file. " +
+			                    "Please make sure that your credentials file is at the correct " +
+			                    "location (~/.aws/credentials), and is in valid format.", ex);
+			        }
+
+			        // Create S3 client
+			        AmazonS3 s3 = new AmazonS3Client(credentials);
+			        Region usWest2 = Region.getRegion(Regions.US_WEST_2);
+			        s3.setRegion(usWest2);
+
+			        // Upload the files
+			        try {
+			            byte[] bytes = file.getBytes();
+			            InputStream stream = new ByteArrayInputStream(bytes);
+			            ObjectMetadata metadata = new ObjectMetadata();
+			            metadata.setContentLength(bytes.length);
+			            s3.putObject("SOME_BUCKET", key, stream, metadata);
+			        } catch (IOException ex) {
+			            System.out.println("ERROR: " + ex);
+			        }*/
 				} else {
 					// maybe produce an error message
 					System.out.println("No file selected");
@@ -261,9 +295,9 @@ public class ClientWindow {
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
 		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
 		
-		textField = new JTextField();
-		searchPanel.add(textField, "flowx,cell 0 0,growx");
-		textField.setColumns(10);
+		queryField = new JTextField();
+		searchPanel.add(queryField, "flowx,cell 0 0,growx");
+		queryField.setColumns(10);
 		
 		btnSearch = new JButton("Search");
 		searchPanel.add(btnSearch, "cell 1 0");
