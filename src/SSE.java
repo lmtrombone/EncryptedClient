@@ -3,12 +3,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 //for now it's assumed only one file is being encrypted and stored
 public class SSE{
@@ -27,8 +26,9 @@ public class SSE{
 			
 			//for now uses same key to encrypt keywords
 			String encryptedIndex = securityHelperCTR.encrypt("1", kE);
-			Tset.put(encryptedFileWords[i], encryptedIndex);
-			
+			//Tset.put(encryptedFileWords[i], encryptedIndex);
+			String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
+			Tset.put(keyStr, encryptedIndex);
 		}
 		
 		for (Entry<String, String> entry : Tset.entrySet()) {
@@ -56,10 +56,12 @@ public class SSE{
 			BufferedReader reader = new BufferedReader(file);
 			String line = reader.readLine();
 			String[] fileWords = line.split(" ");
-			encryptedFileWords = new String[fileWords.length];
-			for (int i = 0; i < fileWords.length; i++){
-				encryptedFileWords[i] = securityHelper.encrypt(fileWords[i], secretKey);
-			}
+			encryptedFileWords = fileWords;
+			//encryptedFileWords = new String[fileWords.length];
+			//for (int i = 0; i < fileWords.length; i++){
+				//encryptedFileWords[i] = securityHelper.encrypt(fileWords[i], secretKey);
+			//}
+			reader.close();
 		}
 		
 		catch(FileNotFoundException e){
@@ -79,9 +81,7 @@ public class SSE{
 		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
 		SecretKey kE;
 		for(Entry<String, String> entry: Tset.entrySet()){
-			//System.out.println("key is: "+ entry.getKey() + " & Value is: " + entry.getValue());
 			kE = SHA256.createIndexingKey(kS, entry.getKey());
-			
 			key = securityHelper.decrypt(entry.getKey(), kS);
 			value = securityHelper.decrypt(entry.getValue(), kE);
 			System.out.println("key is: " + key + " and value is: " + value);

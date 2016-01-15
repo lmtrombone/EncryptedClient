@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
@@ -28,6 +29,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientWindow {
 
@@ -91,7 +95,16 @@ public class ClientWindow {
 	                selectedFile = fileChooser.getSelectedFile();
 	                filePath.setText(selectedFile.getAbsolutePath());
 	                writeLog("Selected file: " + selectedFile.getName());
-	                SSE.EDBSetup(selectedFile, AES.secretKey);
+	                Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
+	                ObjectMapper mapper = new ObjectMapper();
+	                try {
+						String json = mapper.writeValueAsString(map);
+						System.out.println(json);
+						HttpUtil.HttpPost(json);
+					} catch (JsonProcessingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 	            }
 			}
 		});

@@ -182,6 +182,13 @@ public class AES
 		//generates AES key and prints it
 		generateAESEncryptionKey();
 		SecretKey secretKey = AES.secretKey;
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		System.out.println(Arrays.toString(SHA256.createIndexingKey(secretKey, "hello").getEncoded()));
+		
 		byte[] key = secretKey.getEncoded();
 		System.out.println("Secret key: " + Arrays.toString(key));
 		

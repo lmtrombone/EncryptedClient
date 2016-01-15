@@ -10,22 +10,13 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 public class SecurityHelperCTR {
+	
+	//private final SecretKey STATIC_SECRET_KEY = new SecretKeySpec(
+            //hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES");
+	
     private static final int NONCE_SIZE = 8;
-    // make sure that the hexadecimals represent a *truly random* byte array
-    // (e.g. use SecureRandom)
-    private final SecretKey STATIC_SECRET_KEY = new SecretKeySpec(
-            hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES");
     public static SecretKey secretKey;
     private Cipher cipher;
-
-    private static byte[] hexDecode(final String hex) {
-        final byte[] data = new byte[hex.length() / 2];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2),
-                    16);
-        }
-        return data;
-    }
 
     public SecurityHelperCTR() {
         try {
@@ -35,6 +26,15 @@ public class SecurityHelperCTR {
         }
     }
 
+    private static byte[] hexDecode(final String hex) {
+        final byte[] data = new byte[hex.length() / 2];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2),
+                    16);
+        }
+        return data;
+    }
+    
     private static int generateRandomNonce(final byte[] nonceBuffer,
             final int offset, final int size) {
         final SecureRandom rng = new SecureRandom();
@@ -101,9 +101,13 @@ public class SecurityHelperCTR {
 
     public static void main(final String[] args) {
         final String secret = "owlstead";
-        final String secret1 = "dfdsfsf";
+        final String secret1 = "owlstead";
         final String secret2 = "jsrhdf";
         final SecurityHelperCTR securityHelper = new SecurityHelperCTR();
+        System.out.println(securityHelper.encrypt(secret, new SecretKeySpec(
+                hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES"))); 
+        System.out.println(securityHelper.encrypt(secret1, new SecretKeySpec(
+                hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES"))); 
         //final String ct = securityHelper.encrypt(secret);
         //final String ct1 = securityHelper.encrypt(secret1);
         //final String ct2 = securityHelper.encrypt(secret2);
