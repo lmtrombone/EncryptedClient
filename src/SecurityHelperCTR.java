@@ -1,7 +1,16 @@
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -10,9 +19,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 public class SecurityHelperCTR {
-	
-	//private final SecretKey STATIC_SECRET_KEY = new SecretKeySpec(
-            //hexDecode("66e517bb5fd7df840060aed7e8b58986"), "AES");
 	
     private static final int NONCE_SIZE = 8;
     public static SecretKey secretKey;
@@ -97,6 +103,49 @@ public class SecurityHelperCTR {
             throw new IllegalStateException(
                     "Missing basic functionality from Java runtime", e);
         }
+    }
+    
+    
+    //converts file object to string
+    public static String serializeFileToString(File selectedFile){
+   	 	ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+    	try{
+             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(arrayOutputStream);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream);
+             objectOutputStream.writeObject(selectedFile);
+             objectOutputStream.close();
+    	}
+    	
+    	catch(IOException e){
+    		e.printStackTrace();
+    	}
+            
+        return Base64.getEncoder().encodeToString(arrayOutputStream.toByteArray());
+        
+    }
+
+    //converts the file object in string form back to a file
+    public static File deserializeFileFromString(String stringFile) {
+    	
+    	File deserializedFile = null;
+        try{
+        	byte[] byteFile = Base64.getDecoder().decode(stringFile);
+        	ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(byteFile);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(arrayInputStream);
+            ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream);
+            deserializedFile = (File) objectInputStream.readObject();
+        }
+        
+        catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+        
+        return deserializedFile;
+        
     }
 
     public static void main(final String[] args) {
