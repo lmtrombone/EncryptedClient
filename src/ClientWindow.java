@@ -95,16 +95,6 @@ public class ClientWindow {
 	                selectedFile = fileChooser.getSelectedFile();
 	                filePath.setText(selectedFile.getAbsolutePath());
 	                writeLog("Selected file: " + selectedFile.getName());
-	                Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
-	                ObjectMapper mapper = new ObjectMapper();
-	                try {
-						String json = mapper.writeValueAsString(map);
-						System.out.println(json);
-						HttpUtil.HttpPost(json);
-					} catch (JsonProcessingException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
 	            }
 			}
 		});
@@ -127,7 +117,18 @@ public class ClientWindow {
 		uploadButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				writeLog("Uploading file...\nThis doesn't even work.");
+				writeLog("Uploading file...");
+				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+					String json = mapper.writeValueAsString(map);
+					System.out.println(json);
+					HttpUtil.HttpPost(json);
+				}
+                
+                catch (JsonProcessingException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		
