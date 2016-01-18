@@ -60,7 +60,7 @@ public class SecurityHelperCTR {
     }
 
     public String encrypt(final String secret, SecretKey secretKey) {
-        final byte[] plaintext = secret.getBytes(UTF_8);
+        final byte[] plaintext = secret.getBytes();
         final byte[] nonceAndCiphertext = new byte[NONCE_SIZE
                 + plaintext.length];
 
@@ -98,7 +98,52 @@ public class SecurityHelperCTR {
             // note: this may return an invalid result if the value is tampered
             // with
             // it may even contain more or less characters
-            return new String(plaintext, UTF_8);
+            return new String(plaintext);
+        } catch (final GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Missing basic functionality from Java runtime", e);
+        }
+    }
+    
+    public byte[] encryptbytes(byte[] bytefile, SecretKey secretKey) {
+        final byte[] plaintext = bytefile;
+        final byte[] nonceAndCiphertext = new byte[NONCE_SIZE
+                + plaintext.length];
+
+        int offset = generateRandomNonce(nonceAndCiphertext, 0, NONCE_SIZE);
+        final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
+                0, NONCE_SIZE, this.cipher.getBlockSize());
+
+        try {
+            this.cipher.init(Cipher.ENCRYPT_MODE, secretKey,
+                    nonceIV);
+            offset += this.cipher.doFinal(plaintext, 0, plaintext.length,
+                    nonceAndCiphertext, offset);
+            if (offset != nonceAndCiphertext.length) {
+                throw new IllegalStateException(
+                        "Something wrong during encryption");
+            }
+
+            return nonceAndCiphertext;
+        } catch (final GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Missing basic functionality from Java runtime", e);
+        }
+    }
+    
+    public byte[] decryptbytes(byte[] encryptedbytefile, SecretKey secretKey) {
+        final byte[] nonceAndCiphertext = encryptedbytefile;
+        final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
+                0, NONCE_SIZE, this.cipher.getBlockSize());
+        try {
+            this.cipher.init(Cipher.DECRYPT_MODE, secretKey,
+                    nonceIV);
+            final byte[] plaintext = this.cipher.doFinal(nonceAndCiphertext,
+                    NONCE_SIZE, nonceAndCiphertext.length - NONCE_SIZE);
+            // note: this may return an invalid result if the value is tampered
+            // with
+            // it may even contain more or less characters
+            return plaintext;
         } catch (final GeneralSecurityException e) {
             throw new IllegalStateException(
                     "Missing basic functionality from Java runtime", e);
@@ -106,46 +151,40 @@ public class SecurityHelperCTR {
     }
     
     
-    //converts file object to string
-    public static String serializeFileToString(File selectedFile){
-   	 	ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
-    	try{
-             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(arrayOutputStream);
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream);
-             objectOutputStream.writeObject(selectedFile);
-             objectOutputStream.close();
-    	}
-    	
-    	catch(IOException e){
-    		e.printStackTrace();
-    	}
-            
-        return Base64.getEncoder().encodeToString(arrayOutputStream.toByteArray());
-        
-    }
+  //converts File object to bytes
+    public static byte[] serialize(File selectedFile){
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream out = new ObjectOutputStream(bout);
+	        out.writeObject(selectedFile);
+	        out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-    //converts the file object in string form back to a file
-    public static File deserializeFileFromString(String stringFile) {
-    	
+        return bout.toByteArray();
+    }
+    
+  //convert bytes back to file object
+    public static File deserialize(byte[] bytes){
     	File deserializedFile = null;
-        try{
-        	byte[] byteFile = Base64.getDecoder().decode(stringFile);
-        	ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(byteFile);
-            GZIPInputStream gzipInputStream = new GZIPInputStream(arrayInputStream);
-            ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream);
-            deserializedFile = (File) objectInputStream.readObject();
-        }
-        
-        catch (IOException e) {
+        ByteArrayInputStream bout = new ByteArrayInputStream(bytes);     
+		try {
+			ObjectInputStream in = new ObjectInputStream(bout);
+	        deserializedFile = (File) in.readObject();
+	        in.close();
+	        bout.close();
+		}
+		
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-        
-        return deserializedFile;
-        
+
+		return deserializedFile;
     }
 
     public static void main(final String[] args) {

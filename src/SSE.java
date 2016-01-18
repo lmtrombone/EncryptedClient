@@ -3,8 +3,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.crypto.SecretKey;
@@ -49,18 +51,19 @@ public class SSE{
 	
 	//reads file and returns words in an array
 	public static String[] readandEncryptFile(File selectedFile, SecretKey secretKey){
-		String[] encryptedFileWords = null;
-		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
+		List<String> fileWords = new ArrayList<String>();
+		String[] lines;
+		String line = null;
 		try{
 			FileReader file = new FileReader(selectedFile);
 			BufferedReader reader = new BufferedReader(file);
-			String line = reader.readLine();
-			String[] fileWords = line.split(" ");
-			encryptedFileWords = fileWords;
-			//encryptedFileWords = new String[fileWords.length];
-			//for (int i = 0; i < fileWords.length; i++){
-				//encryptedFileWords[i] = securityHelper.encrypt(fileWords[i], secretKey);
-			//}
+			while((line = reader.readLine()) != null){
+				lines = line.split(" ");
+				for (int i = 0; i < lines.length; i++){
+					fileWords.add(lines[i]);
+				}
+			}
+			
 			reader.close();
 		}
 		
@@ -72,7 +75,7 @@ public class SSE{
 			System.out.println("I/O Exception: " + e.getMessage());
 		}
 		
-		return encryptedFileWords;
+		return fileWords.toArray(new String[fileWords.size()]);
 	}
 	
 	//decrypts File
