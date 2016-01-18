@@ -11,8 +11,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
@@ -201,14 +203,37 @@ public class ClientWindow {
 		
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String[] keywords = queryField.getText().split(" +");
-				//post request
+				//String[] keywords = queryField.getText().split(" +");
+				String[] keyWord = queryField.getText().split(" ");
+				if(keyWord.length > 1){
+					System.out.println("Only single word search is supported."
+							+ "Searching for documents with only the first search term.");
+				}
+				//get request
 				//result should be list of ind
-				List<String> inds = new ArrayList<>();
-				for (String i : inds) {
+				HashMap<String, ArrayList<String>> encIndex = HttpUtil.HttpGet(keyWord[0]);
+				
+				//gets set of encrypted ids and decrypts
+				SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
+				ArrayList <String> values, ids = new ArrayList<String>();
+				//ArrayList <String> ids = new ArrayList<String>();
+				for (Entry<String, ArrayList<String>> entry : encIndex.entrySet()) {
+					String key = entry.getKey();
+					System.out.println("Key: " + key);
+					values = entry.getValue();
+					for(int i = 0; i < values.size(); i++){
+						System.out.println("Values: " + values.get(i));
+						SecretKey kE = SHA256.createIndexingKey(AES.secretKey, key);
+						ids.add(securityHelperCTR.decrypt(values.get(i), kE));
+					}
+				}
+				
+				//List<String> inds = new ArrayList<>();
+				searchResults.addElement("Resulting ids: ");
+				for (String i : ids) {
 					searchResults.addElement(i);
 				}
-				searchResults.addElement("Some result");
+				//searchResults.addElement("Some result");
 			}
 		});
 		

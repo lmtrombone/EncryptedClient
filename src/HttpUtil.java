@@ -22,11 +22,11 @@ public class HttpUtil{
 	//need to test to make sure it works
 	//HTTP Get request
 	//returns result as HashMap
-	public static HashMap<String, ArrayList<String>> HttpGet(){
+	public static HashMap<String, ArrayList<String>> HttpGet(String keyWord){
 		
 		HashMap<String, ArrayList<String>> encIndex = null;
 		//correct url?
-		String url = "52.34.59.216:8080";
+		String url = "52.34.59.216:8080/searchfile?" + keyWord;
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpGet getRequest = new HttpGet(url);
 			

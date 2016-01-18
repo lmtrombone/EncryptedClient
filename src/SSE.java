@@ -61,7 +61,7 @@ public class SSE{
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	    fileScanner.useDelimiter(" ");
+	    fileScanner.useDelimiter(" |\r\n");
 	    ArrayList<String> words = new ArrayList<String>();
 	    while (fileScanner.hasNext())
 	    { 
@@ -70,14 +70,6 @@ public class SSE{
 	        {
 	            words.add(nextWord);
 	        }
-	    }
-	    Collections.sort(words);
-	    System.out.println("There are " +  words.size() + " unique word(s)");
-	    System.out.println("These words are:");
-	    for (Iterator<String> it = words.iterator(); it.hasNext();) 
-	    {
-	        String f = it.next();
-	        System.out.println(f);
 	    }
 	    fileScanner.close();
 	    
