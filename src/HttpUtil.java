@@ -2,8 +2,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.Iterator;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -14,7 +15,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 
 public class HttpUtil{
@@ -22,9 +22,9 @@ public class HttpUtil{
 	//need to test to make sure it works
 	//HTTP Get request
 	//returns result as HashMap
-	public static HashMap<String, String> HttpGet(){
+	public static HashMap<String, ArrayList<String>> HttpGet(){
 		
-		HashMap<String, String> encIndex = null;
+		HashMap<String, ArrayList<String>> encIndex = null;
 		//correct url?
 		String url = "52.34.59.216:8080";
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
@@ -41,19 +41,29 @@ public class HttpUtil{
 			
 			JSONObject myjson = new JSONObject(jsonString);
 
-            JSONArray nameArray = myjson.names();
-            JSONArray valArray = myjson.toJSONArray(nameArray);
-            encIndex = new HashMap<String, String>();
-            for(int i=0;i<valArray.length();i++)
-            {
-                //System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
-                encIndex.put(nameArray.getString(i), valArray.getString(i));
-            }
-            
-            //for (Entry<String, String> entry : encIndex.entrySet()) {
-    			//System.out.print("key is: "+ entry.getKey() + " & Value is: ");
-    	    	//System.out.println(entry.getValue());
-    		//}
+			Iterator<String> keys = myjson.keys();
+			while(keys.hasNext()){
+				String key = (String) keys.next();
+				if(myjson.get(key) instanceof JSONArray){
+					System.out.println("word: " + key);
+					JSONArray idx = myjson.getJSONArray(key);
+					for(int i = 0; i < idx.length(); i++){
+						//System.out.println(idx.getString(i));
+						if(encIndex.get(key) == null){
+							encIndex.put(key, new ArrayList<String>());
+						}
+						encIndex.get(key).add(idx.getString(i));
+					}
+				}
+				else if(myjson instanceof JSONObject){
+					//System.out.println("word: " + key);
+					//System.out.println(myjson.getString(key));
+					if(encIndex.get(key) == null){
+						encIndex.put(key, new ArrayList<String>());
+					}
+					encIndex.get(key).add(myjson.getString(key));
+				}
+			}
 
 		}
 		
@@ -108,40 +118,27 @@ public class HttpUtil{
 	//function for testing json parser
 	public static void test(){
 		
-		String jsonString = "{\"example\":\"1\",\"fr\":\"lol\",\"s\":\"up\"}";
+		//String jsonString = "{\"example\":\"1\",\"fr\":\"lol\",\"s\":\"up\"}";
+		String jsonString = "{\"status\": \"OK\",\"origin_addresses\": [ \"Vancouver\", \"Seattle\" ],\"destination_addresses\": [ \"San Francisco\", \"Victoria\" ]}";
 		try {
-			/*
-            JSONParser parser = new JSONParser();
-            Object resultObject = parser.parse(jsonString);
-
-            if (resultObject instanceof JSONArray) {
-                JSONArray array=(JSONArray)resultObject;
-                for (Object object : array) {
-                    JSONObject obj =(JSONObject)object;
-                    System.out.println(obj.get("example"));
-                    System.out.println(obj.get("fr"));
-                }   
-            }else if (resultObject instanceof JSONObject) {
-                JSONObject obj =(JSONObject)resultObject;
-                System.out.println(obj.get("example"));
-                System.out.println(obj.get("fr"));
-            }*/
 			
 			JSONObject myjson = new JSONObject(jsonString);
-
-            JSONArray nameArray = myjson.names();
-            JSONArray valArray = myjson.toJSONArray(nameArray);
-            HashMap<String, String> encIndex = new HashMap<String, String>();
-            for(int i=0;i<valArray.length();i++)
-            {
-                System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
-                encIndex.put(nameArray.getString(i), valArray.getString(i));
-            }
-            
-            for (Entry<String, String> entry : encIndex.entrySet()) {
-    			System.out.print("key is: "+ entry.getKey() + " & Value is: ");
-    	    	System.out.println(entry.getValue());
-    		}
+			Iterator<String> keys = myjson.keys();
+			while(keys.hasNext()){
+				String key = (String) keys.next();
+				if(myjson.get(key) instanceof JSONArray){
+					System.out.println("word: " + key);
+					JSONArray idx = myjson.getJSONArray(key);
+					for(int i = 0; i < idx.length(); i++){
+						System.out.println(idx.getString(i));
+					}
+				}
+				else if(myjson instanceof JSONObject){
+					System.out.println("word: " + key);
+					System.out.println(myjson.getString(key));
+				}
+			}
+			
 			
         } catch (Exception e) {
             System.out.println("Exception: " + e);
