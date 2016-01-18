@@ -1,41 +1,45 @@
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 import javax.crypto.SecretKey;
 
-//for now it's assumed only one file is being encrypted and stored
 public class SSE{
 	
-	public static HashMap<String, String> Tset;
+	public static HashMap<String, ArrayList<String>> Tset;
 	
-	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS){
+	public static HashMap<String, ArrayList<String>> EDBSetup(File selectedFile, SecretKey kS){
 		
 		//TODO: Parse documents with indexing
 		
-		String[] encryptedFileWords = readandEncryptFile(selectedFile, kS);
+		String[] fileWords = readFile(selectedFile);
 		SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
-		Tset = new HashMap<String, String>();
-		for (int i = 0; i < encryptedFileWords.length; i++){
-			SecretKey kE = SHA256.createIndexingKey(kS, encryptedFileWords[i]);
+		Tset = new HashMap<String, ArrayList<String>>();
+		for (int i = 0; i < fileWords.length; i++){
+			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
 			//for now uses same key to encrypt keywords
 			String encryptedIndex = securityHelperCTR.encrypt("1", kE);
 			//Tset.put(encryptedFileWords[i], encryptedIndex);
-			String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
-			Tset.put(keyStr, encryptedIndex);
+			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
+			if(Tset.get(fileWords[i]) == null){
+				Tset.put(fileWords[i], new ArrayList<String>());
+			}
+			Tset.get(fileWords[i]).add(encryptedIndex);
 		}
 		
-		for (Entry<String, String> entry : Tset.entrySet()) {
-			System.out.print("key is: "+ entry.getKey() + " & Value is: ");
-	    	System.out.println(entry.getValue());
+		for (Entry<String, ArrayList<String>> entry : Tset.entrySet()) {
+			String key = entry.getKey();
+			System.out.println("Key: " + key);
+			ArrayList <String> values = entry.getValue();
+			for(int i = 0; i < values.size(); i++){
+				System.out.println("Values: " + values.get(i));
+			}
 		}
 		
 		//for now not used
@@ -49,34 +53,37 @@ public class SSE{
 	
 	//TODO: Look into Kt
 	
-	//reads file and returns words in an array
-	public static String[] readandEncryptFile(File selectedFile, SecretKey secretKey){
-		List<String> fileWords = new ArrayList<String>();
-		String[] lines;
-		String line = null;
-		try{
-			FileReader file = new FileReader(selectedFile);
-			BufferedReader reader = new BufferedReader(file);
-			while((line = reader.readLine()) != null){
-				lines = line.split(" ");
-				for (int i = 0; i < lines.length; i++){
-					fileWords.add(lines[i]);
-				}
-			}
-			
-			reader.close();
+	//reads file and returns unique words in an array
+	public static String[] readFile(File selectedFile){
+		Scanner fileScanner = null;
+		try {
+			fileScanner = new Scanner(selectedFile);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-		
-		catch(FileNotFoundException e){
-			System.out.println("File not found: " + e.getMessage());
-		}
-		
-		catch(IOException e){
-			System.out.println("I/O Exception: " + e.getMessage());
-		}
-		
-		return fileWords.toArray(new String[fileWords.size()]);
+	    fileScanner.useDelimiter(" ");
+	    ArrayList<String> words = new ArrayList<String>();
+	    while (fileScanner.hasNext())
+	    { 
+	    	String nextWord = fileScanner.next();
+	        if (!words.contains(nextWord))
+	        {
+	            words.add(nextWord);
+	        }
+	    }
+	    Collections.sort(words);
+	    System.out.println("There are " +  words.size() + " unique word(s)");
+	    System.out.println("These words are:");
+	    for (Iterator<String> it = words.iterator(); it.hasNext();) 
+	    {
+	        String f = it.next();
+	        System.out.println(f);
+	    }
+	    fileScanner.close();
+	    
+	    return words.toArray(new String[words.size()]);
 	}
+		
 	
 	//decrypts File
 	public static void decryptFile(HashMap<String, String> Tset, SecretKey kS){

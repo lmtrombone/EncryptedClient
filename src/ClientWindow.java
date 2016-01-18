@@ -110,7 +110,7 @@ public class ClientWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Decrypting file...\nThis doesn't even work.");
-				SSE.decryptFile(SSE.Tset, AES.secretKey);
+				//SSE.decryptFile(SSE.Tset, AES.secretKey);
 			}
 		});
 		
@@ -118,7 +118,7 @@ public class ClientWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Uploading file...");
-				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
+				Map<String, ArrayList<String>> map = SSE.EDBSetup(selectedFile, AES.secretKey);
                 ObjectMapper mapper = new ObjectMapper();
                 try {
 					String json = mapper.writeValueAsString(map);

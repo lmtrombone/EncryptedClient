@@ -2,15 +2,67 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 
 public class HttpUtil{
 
+	//need to test to make sure it works
+	//HTTP Get request
+	//returns result as HashMap
+	public static HashMap<String, String> HttpGet(){
+		
+		HashMap<String, String> encIndex = null;
+		//correct url?
+		String url = "52.34.59.216:8080";
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
+			HttpGet getRequest = new HttpGet(url);
+			
+			HttpResponse response = httpClient.execute(getRequest);
+			
+			if(response.getStatusLine().getStatusCode() != 200){
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ response.getStatusLine().getStatusCode());
+			}
+			
+			String jsonString = EntityUtils.toString(response.getEntity());
+			
+			JSONObject myjson = new JSONObject(jsonString);
+
+            JSONArray nameArray = myjson.names();
+            JSONArray valArray = myjson.toJSONArray(nameArray);
+            encIndex = new HashMap<String, String>();
+            for(int i=0;i<valArray.length();i++)
+            {
+                //System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
+                encIndex.put(nameArray.getString(i), valArray.getString(i));
+            }
+            
+            //for (Entry<String, String> entry : encIndex.entrySet()) {
+    			//System.out.print("key is: "+ entry.getKey() + " & Value is: ");
+    	    	//System.out.println(entry.getValue());
+    		//}
+
+		}
+		
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		return encIndex;
+	}
 	
 	//HTTP POST request
 	public static void HttpPost(String json){
@@ -51,6 +103,54 @@ public class HttpUtil{
 		catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	//function for testing json parser
+	public static void test(){
+		
+		String jsonString = "{\"example\":\"1\",\"fr\":\"lol\",\"s\":\"up\"}";
+		try {
+			/*
+            JSONParser parser = new JSONParser();
+            Object resultObject = parser.parse(jsonString);
+
+            if (resultObject instanceof JSONArray) {
+                JSONArray array=(JSONArray)resultObject;
+                for (Object object : array) {
+                    JSONObject obj =(JSONObject)object;
+                    System.out.println(obj.get("example"));
+                    System.out.println(obj.get("fr"));
+                }   
+            }else if (resultObject instanceof JSONObject) {
+                JSONObject obj =(JSONObject)resultObject;
+                System.out.println(obj.get("example"));
+                System.out.println(obj.get("fr"));
+            }*/
+			
+			JSONObject myjson = new JSONObject(jsonString);
+
+            JSONArray nameArray = myjson.names();
+            JSONArray valArray = myjson.toJSONArray(nameArray);
+            HashMap<String, String> encIndex = new HashMap<String, String>();
+            for(int i=0;i<valArray.length();i++)
+            {
+                System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
+                encIndex.put(nameArray.getString(i), valArray.getString(i));
+            }
+            
+            for (Entry<String, String> entry : encIndex.entrySet()) {
+    			System.out.print("key is: "+ entry.getKey() + " & Value is: ");
+    	    	System.out.println(entry.getValue());
+    		}
+			
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
+        }
+
+	}
+	
+	public static void main(String[] args){
+		test();
 	}
 	
 }
