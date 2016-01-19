@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -205,7 +206,7 @@ public class ClientWindow {
 			public void actionPerformed(ActionEvent e) {
 				//String[] keywords = queryField.getText().split(" +");
 				String[] keyWord = queryField.getText().split(" ");
-				if(keyWord.length > 1){
+				if(keyWord.length != 1){
 					System.out.println("Only single word search is supported."
 							+ "Searching for documents with only the first search term.");
 				}
@@ -231,12 +232,16 @@ public class ClientWindow {
 				}
 				*/
 				SecretKey kE = SHA256.createIndexingKey(AES.secretKey, keyWord[0]);
-				String encWord = SHA256.createIndexingString(kE, keyWord[0]);
-				List<String> inds = HttpUtil.HttpGet(encWord);
+				List<String> inds = Collections.emptyList();
+				if (!keyWord[0].isEmpty()) {
+					String encWord = SHA256.createIndexingString(kE, keyWord[0]);
+					inds = HttpUtil.HttpGet(encWord);
+				}
 				String[] ids = inds.toArray(new String[inds.size()]);
 				
 				SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 				String[] x = new String[ids.length];
+				searchResults.clear();
 				for(int i = 0; i < ids.length; i++){
 					x[i] = securityHelperCTR.decrypt(ids[i], kE);
 					searchResults.addElement(x[i]);

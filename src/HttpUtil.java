@@ -29,7 +29,6 @@ public class HttpUtil{
 	public static HashMap<String, ArrayList<String>> HttpGet(String keyWord){
 		
 		HashMap<String, ArrayList<String>> encIndex = null;
-		//correct url?
 		String url = "http://52.34.59.216:8080/searchfile?" + keyWord;
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpGet getRequest = new HttpGet(url);
@@ -83,8 +82,9 @@ public class HttpUtil{
 		 		
 		//HashMap<String, String> encIndex = null;
 		List<String> list = null;
-		//correct url?
 		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
+		//String url = "http://128.111.43.52:8080/searchfile?query=" + keyWord;
+		//System.out.println(keyWord);
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpGet getRequest = new HttpGet(url);
 		 			
@@ -129,6 +129,7 @@ public class HttpUtil{
 	public static void HttpPost(String json){
 		
 		String url = "http://52.34.59.216:8080/indexfile";
+		//String url = "http://128.111.43.52:8080/indexfile";
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpPost post = new HttpPost(url);
 			
