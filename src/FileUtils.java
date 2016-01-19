@@ -1,4 +1,4 @@
-import com.amazonaws.AmazonClientException;
+/*import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -98,3 +98,4 @@ public class FileUtils
         downloadFile("C:\\Users\\Computer\\Documents\\txt\\testdown.txt", "test.txt");
     }
 }
+*/

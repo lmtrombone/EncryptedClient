@@ -5,16 +5,24 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class HttpUtil{
@@ -22,11 +30,12 @@ public class HttpUtil{
 	//need to test to make sure it works
 	//HTTP Get request
 	//returns result as HashMap
+	/*
 	public static HashMap<String, ArrayList<String>> HttpGet(String keyWord){
 		
 		HashMap<String, ArrayList<String>> encIndex = null;
 		//correct url?
-		String url = "52.34.59.216:8080/searchfile?" + keyWord;
+		String url = "http://52.34.59.216:8080/searchfile?" + keyWord;
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpGet getRequest = new HttpGet(url);
 			
@@ -73,11 +82,54 @@ public class HttpUtil{
 		
 		return encIndex;
 	}
+	*/
+	
+	public static HashMap<String, String> HttpGet(String keyWord){
+		 		
+		HashMap<String, String> encIndex = null;
+		//correct url?
+		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
+			HttpGet getRequest = new HttpGet(url);
+		 			
+		 	HttpResponse response = httpClient.execute(getRequest);
+		 			
+		 	if(response.getStatusLine().getStatusCode() != 200){
+		 		throw new RuntimeException("Failed : HTTP error code : "
+		 				+ response.getStatusLine().getStatusCode());
+		 	}
+		 			
+		 	String jsonString = EntityUtils.toString(response.getEntity());
+		 			
+		 	JSONObject myjson = new JSONObject(jsonString);
+		 
+		    JSONArray nameArray = myjson.names();
+		    JSONArray valArray = myjson.toJSONArray(nameArray);
+		    encIndex = new HashMap<String, String>();
+		    for(int i=0;i<valArray.length();i++)
+		    {
+		    	//System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
+		        encIndex.put(nameArray.getString(i), valArray.getString(i));
+		    }
+		             
+		    //for (Entry<String, String> entry : encIndex.entrySet()) {
+		    	//System.out.print("key is: "+ entry.getKey() + " & Value is: ");
+		     	//System.out.println(entry.getValue());
+		    //}
+		 
+		 	}
+		 		
+		 	catch(IOException e){
+		 		e.printStackTrace();
+		 	}
+		 		
+		 	return encIndex;
+	}
 	
 	//HTTP POST request
-	public static void HttpPost(String json){
+	/*public static void HttpPost(String json){
 		
-		String url = "http://128.111.43.52:8080/indexfile";
+		String url = "http://52.34.59.216:8080/indexfile";
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpPost post = new HttpPost(url);
 			
@@ -113,7 +165,55 @@ public class HttpUtil{
 		catch(IOException e){
 			e.printStackTrace();
 		}
+	}*/
+	
+public static void HttpPost(Map<String, String> map){
+		
+		String url = "http://52.34.59.216:8080/indexfile";
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
+			HttpPost post = new HttpPost(url);
+			
+			//ObjectMapper mapper = new ObjectMapper();
+			//String json = mapper.writeValueAsString(map);
+			//StringEntity input = new StringEntity(json);
+			//input.setContentType("application/json");
+			
+			List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+			for(Entry<String, String> entry : map.entrySet()){
+				urlParameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+			}
+			post.setEntity(new UrlEncodedFormEntity(urlParameters));
+			
+			HttpResponse response = httpClient.execute(post);
+			
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ response.getStatusLine().getStatusCode());
+			}
+			
+			BufferedReader rd = new BufferedReader(
+                    new InputStreamReader(response.getEntity().getContent()));
+			
+			StringBuffer result = new StringBuffer();
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				result.append(line);
+			}
+
+			System.out.println(result.toString());
+			
+
+		}
+		
+		catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		catch(IOException e){
+			e.printStackTrace();
+		}
 	}
+	
 	
 	//function for testing json parser
 	public static void test(){

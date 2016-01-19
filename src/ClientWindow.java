@@ -120,17 +120,17 @@ public class ClientWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Uploading file...");
-				Map<String, ArrayList<String>> map = SSE.EDBSetup(selectedFile, AES.secretKey);
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-					String json = mapper.writeValueAsString(map);
-					System.out.println(json);
-					HttpUtil.HttpPost(json);
-				}
+				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
+                //ObjectMapper mapper = new ObjectMapper();
+                //try {
+					//String json = mapper.writeValueAsString(map);
+					//System.out.println(json);
+					HttpUtil.HttpPost(map);
+				//}
                 
-                catch (JsonProcessingException e1) {
-					e1.printStackTrace();
-				}
+                //catch (JsonProcessingException e1) {
+					//e1.printStackTrace();
+				//}
 			}
 		});
 		
@@ -211,12 +211,13 @@ public class ClientWindow {
 				}
 				//get request
 				//result should be list of ind
-				HashMap<String, ArrayList<String>> encIndex = HttpUtil.HttpGet(keyWord[0]);
-				
+				//HashMap<String, ArrayList<String>> encIndex = HttpUtil.HttpGet(keyWord[0]);
+				HashMap<String, String> encIndex = HttpUtil.HttpGet(keyWord[0]);
 				//gets set of encrypted ids and decrypts
-				SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
-				ArrayList <String> values, ids = new ArrayList<String>();
+				//SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
+				//ArrayList <String> values, ids = new ArrayList<String>();
 				//ArrayList <String> ids = new ArrayList<String>();
+				/*
 				for (Entry<String, ArrayList<String>> entry : encIndex.entrySet()) {
 					String key = entry.getKey();
 					System.out.println("Key: " + key);
@@ -227,12 +228,16 @@ public class ClientWindow {
 						ids.add(securityHelperCTR.decrypt(values.get(i), kE));
 					}
 				}
+				*/
+				for (Entry<String, String> entry: encIndex.entrySet()){
+					writeLog("key is: " + entry.getKey() + " and value is: " + entry.getValue());
+				}
 				
 				//List<String> inds = new ArrayList<>();
-				searchResults.addElement("Resulting ids: ");
-				for (String i : ids) {
-					searchResults.addElement(i);
-				}
+				//searchResults.addElement("Resulting ids: ");
+				//for (String i : ids) {
+					//searchResults.addElement(i);
+				//}
 				//searchResults.addElement("Some result");
 			}
 		});

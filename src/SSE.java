@@ -10,16 +10,17 @@ import java.util.Scanner;
 import javax.crypto.SecretKey;
 
 public class SSE{
+	public static HashMap<String, String> Tset;
+	//public static HashMap<String, ArrayList<String>> Tset;
 	
-	public static HashMap<String, ArrayList<String>> Tset;
-	
-	public static HashMap<String, ArrayList<String>> EDBSetup(File selectedFile, SecretKey kS){
+	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS){
 		
 		//TODO: Parse documents with indexing
 		
 		String[] fileWords = readFile(selectedFile);
 		SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
-		Tset = new HashMap<String, ArrayList<String>>();
+		//Tset = new HashMap<String, ArrayList<String>>();
+		Tset = new HashMap<String, String>();
 		for (int i = 0; i < fileWords.length; i++){
 			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
@@ -27,20 +28,21 @@ public class SSE{
 			String encryptedIndex = securityHelperCTR.encrypt("1", kE);
 			//Tset.put(encryptedFileWords[i], encryptedIndex);
 			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
-			if(Tset.get(fileWords[i]) == null){
-				Tset.put(fileWords[i], new ArrayList<String>());
-			}
-			Tset.get(fileWords[i]).add(encryptedIndex);
+			//if(Tset.get(fileWords[i]) == null){
+				//Tset.put(fileWords[i], new ArrayList<String>());
+			//}
+			//Tset.get(fileWords[i]).add(encryptedIndex);
+			Tset.put(fileWords[i], encryptedIndex);
 		}
 		
-		for (Entry<String, ArrayList<String>> entry : Tset.entrySet()) {
-			String key = entry.getKey();
-			System.out.println("Key: " + key);
-			ArrayList <String> values = entry.getValue();
-			for(int i = 0; i < values.size(); i++){
-				System.out.println("Values: " + values.get(i));
-			}
-		}
+		//for (Entry<String, ArrayList<String>> entry : Tset.entrySet()) {
+			//String key = entry.getKey();
+			//System.out.println("Key: " + key);
+			//ArrayList <String> values = entry.getValue();
+			//for(int i = 0; i < values.size(); i++){
+				//System.out.println("Values: " + values.get(i));
+			//}
+		//}
 		
 		//for now not used
 		//AES.generateAESEncryptionKey();
