@@ -230,11 +230,21 @@ public class ClientWindow {
 					}
 				}
 				*/
+				SecretKey kE = SHA256.createIndexingKey(AES.secretKey, keyWord[0]);
+				String encWord = SHA256.createIndexingString(kE, keyWord[0]);
+				List<String> inds = HttpUtil.HttpGet(encWord);
+				String[] ids = inds.toArray(new String[inds.size()]);
 				
-				List<String> inds = HttpUtil.HttpGet(keyWord[0]);
-				for (String i : inds) {
-					searchResults.addElement(i);
+				SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
+				String[] x = new String[ids.length];
+				for(int i = 0; i < ids.length; i++){
+					x[i] = securityHelperCTR.decrypt(ids[i], kE);
+					searchResults.addElement(x[i]);
 				}
+				
+				//for (String i : inds) {
+					//searchResults.addElement(i);
+				//}
 				//searchResults.addElement("Some result");
 			}
 		});

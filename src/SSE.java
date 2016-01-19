@@ -1,11 +1,10 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -24,15 +23,17 @@ public class SSE{
 		for (int i = 0; i < fileWords.length; i++){
 			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
+			String encWord = SHA256.createIndexingString(kE, fileWords[i]);
 			//for now uses same key to encrypt keywords
-			String encryptedIndex = securityHelperCTR.encrypt("1", kE);
+			String key = UUID.randomUUID().toString();
+			String encryptedIndex = securityHelperCTR.encrypt(key, kE);
 			//Tset.put(encryptedFileWords[i], encryptedIndex);
 			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
 			//if(Tset.get(fileWords[i]) == null){
 				//Tset.put(fileWords[i], new ArrayList<String>());
 			//}
 			//Tset.get(fileWords[i]).add(encryptedIndex);
-			Tset.put(fileWords[i], encryptedIndex);
+			Tset.put(encWord, encryptedIndex);
 		}
 		
 		//for (Entry<String, ArrayList<String>> entry : Tset.entrySet()) {
