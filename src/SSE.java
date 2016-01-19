@@ -12,7 +12,7 @@ public class SSE{
 	public static HashMap<String, String> Tset;
 	//public static HashMap<String, ArrayList<String>> Tset;
 	
-	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS){
+	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS, String key){
 		
 		//TODO: Parse documents with indexing
 		
@@ -23,9 +23,7 @@ public class SSE{
 		for (int i = 0; i < fileWords.length; i++){
 			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
-			String encWord = SHA256.createIndexingString(kE, fileWords[i]);
-			//for now uses same key to encrypt keywords
-			String key = UUID.randomUUID().toString();
+			String encWord = SHA256.createIndexingString(kE, fileWords[i]).replace("+", "X"); // remove + signs TEMP FIX TODO
 			String encryptedIndex = securityHelperCTR.encrypt(key, kE);
 			//Tset.put(encryptedFileWords[i], encryptedIndex);
 			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());

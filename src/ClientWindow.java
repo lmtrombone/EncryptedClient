@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import javax.crypto.SecretKey;
@@ -41,10 +42,7 @@ public class ClientWindow {
 	private JFrame frame;
 	private JTextField filePath;
 	private JButton browseButton;
-	private JButton encryptButton;
-	private JButton decryptButton;
 	private JButton uploadButton;
-	private JButton idkButton;
 	private JFileChooser fileChooser;
 	
 	private File selectedFile;
@@ -91,6 +89,10 @@ public class ClientWindow {
 		browseButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				if (AES.secretKey == null) {
+					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
+					return;
+				}
 				if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 	            {
 	                System.out.println(fileChooser.getSelectedFile());
@@ -102,36 +104,32 @@ public class ClientWindow {
 			}
 		});
 		
-		encryptButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				writeLog("Encrypting file...\nThis doesn't even work.");
-			}
-		});
-		
-		decryptButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				writeLog("Decrypting file...\nThis doesn't even work.");
-				//SSE.decryptFile(SSE.Tset, AES.secretKey);
-			}
-		});
-		
 		uploadButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				writeLog("Uploading file...");
-				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
+				if (selectedFile == null) {
+					JOptionPane.showMessageDialog(null, "Please select a file");
+					return;
+				}
+				writeLog("Encrypting file...");
+				//for now uses same key to encrypt keywords
+				String key = UUID.randomUUID().toString();
+				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey, key);
                 ObjectMapper mapper = new ObjectMapper();
                 try {
 					String json = mapper.writeValueAsString(map);
 					System.out.println(json);
+					writeLog("Indexing file...");
 					HttpUtil.HttpPost(json);
-				}
-                
-                catch (JsonProcessingException e1) {
+				} catch (JsonProcessingException e1) {
 					e1.printStackTrace();
+					writeLog("Upload failed!");
+					return;
 				}
+                writeLog("Uploading file...");
+                FileUtils.uploadFile(selectedFile, key);
+                writeLog("Upload successful!");
+                JOptionPane.showMessageDialog(null, "Upload successfull!");
 			}
 		});
 		
@@ -162,20 +160,6 @@ public class ClientWindow {
 							ex.printStackTrace();
 						}
 			        }
-					
-					/*try {
-						//Deserialize
-						ObjectInputStream in = new ObjectInputStream(new FileInputStream("MyKey.ser"));
-						SecretKey readKey = (SecretKey) in.readObject();
-						in.close();
-						
-						byte[] bytes = readKey.getEncoded();
-						//String keyStr = Base64.getEncoder().encodeToString(bytes);
-						//byte[] decoded = Base64.getDecoder().decode(keyStr); // Works for decoding
-						keyFile.setText(Arrays.toString(bytes)); //Should store in file and display filename instead of key
-					} catch (IOException | ClassNotFoundException ex) {
-						ex.printStackTrace();
-					}*/
 				} else {
 					fileChooser.setApproveButtonText("Load");
 			        fileChooser.setDialogTitle("Select a file to load key...");
@@ -192,6 +176,7 @@ public class ClientWindow {
 							keyFile.setText(file.getName()); //Should store in file and display filename instead of key
 						} catch (IOException | ClassNotFoundException ex) {
 							ex.printStackTrace();
+							JOptionPane.showMessageDialog(null, "Invalid key file!");
 						}
 			        }
 					
@@ -204,9 +189,13 @@ public class ClientWindow {
 		
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (AES.secretKey == null) {
+					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
+					return;
+				}
 				//String[] keywords = queryField.getText().split(" +");
 				String[] keyWord = queryField.getText().split(" ");
-				if(keyWord.length != 1){
+				if(keyWord.length != 1) {
 					System.out.println("Only single word search is supported."
 							+ "Searching for documents with only the first search term.");
 				}
@@ -234,58 +223,44 @@ public class ClientWindow {
 				SecretKey kE = SHA256.createIndexingKey(AES.secretKey, keyWord[0]);
 				List<String> inds = Collections.emptyList();
 				if (!keyWord[0].isEmpty()) {
-					String encWord = SHA256.createIndexingString(kE, keyWord[0]);
+					String encWord = SHA256.createIndexingString(kE, keyWord[0]).replace("+", "X"); // remove + signs TEMP FIX TODO
 					inds = HttpUtil.HttpGet(encWord);
 				}
 				String[] ids = inds.toArray(new String[inds.size()]);
 				
-				SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
-				String[] x = new String[ids.length];
 				searchResults.clear();
-				for(int i = 0; i < ids.length; i++){
-					x[i] = securityHelperCTR.decrypt(ids[i], kE);
-					searchResults.addElement(x[i]);
+				if (ids.length == 0) {
+					searchResults.addElement("No results...");
+				} else {
+					SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
+					String[] x = new String[ids.length];
+					for(int i = 0; i < ids.length; i++) {
+						x[i] = securityHelperCTR.decrypt(ids[i], kE);
+						searchResults.addElement(x[i]);
+					}
 				}
-				
-				//for (String i : inds) {
-					//searchResults.addElement(i);
-				//}
-				//searchResults.addElement("Some result");
 			}
 		});
 		
 		btnDownload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (list.getSelectedIndex() >= 0) {
-					JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
-					/*AWSCredentials credentials;
-			        try {
-			            credentials = new ProfileCredentialsProvider().getCredentials();
-			        } catch (Exception ex) {
-			            throw new AmazonClientException(
-			                    "Cannot load the credentials from the credential profiles file. " +
-			                    "Please make sure that your credentials file is at the correct " +
-			                    "location (~/.aws/credentials), and is in valid format.", ex);
+					JFileChooser fileChooser = new JFileChooser();
+					fileChooser.setApproveButtonText("Save");
+			        fileChooser.setDialogTitle("Select a file...");
+			        
+			        // file chooser to save file
+			        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
+			        	String path = fileChooser.getSelectedFile().getAbsolutePath();
+						FileUtils.downloadFile(path, list.getSelectedValue());
+						writeLog("Downloaded to " + path);
+						JOptionPane.showMessageDialog(null, "Downloaded to " + path);
 			        }
-
-			        // Create S3 client
-			        AmazonS3 s3 = new AmazonS3Client(credentials);
-			        Region usWest2 = Region.getRegion(Regions.US_WEST_2);
-			        s3.setRegion(usWest2);
-
-			        // Upload the files
-			        try {
-			            byte[] bytes = file.getBytes();
-			            InputStream stream = new ByteArrayInputStream(bytes);
-			            ObjectMetadata metadata = new ObjectMetadata();
-			            metadata.setContentLength(bytes.length);
-			            s3.putObject("SOME_BUCKET", key, stream, metadata);
-			        } catch (IOException ex) {
-			            System.out.println("ERROR: " + ex);
-			        }*/
 				} else {
 					// maybe produce an error message
 					System.out.println("No file selected");
+					JOptionPane.showMessageDialog(null, "No file selected");
 				}
 			}
 		});
@@ -327,18 +302,8 @@ public class ClientWindow {
 		outputLog = new JTextArea();
 		scrollPane.setViewportView(outputLog);
 		
-		encryptButton = new JButton("Encrypt");
-		uploadPanel.add(encryptButton, "cell 2 1");
-		
-		decryptButton = new JButton("Decrypt");
-		uploadPanel.add(decryptButton, "cell 2 2");
-		
 		uploadButton = new JButton("Upload");
-		uploadPanel.add(uploadButton, "cell 2 3");
-		
-		idkButton = new JButton("idk");
-		uploadPanel.add(idkButton, "cell 2 4");
-		idkButton.setEnabled(false);
+		uploadPanel.add(uploadButton, "cell 2 1");
 		
 		keyFile = new JTextField();
 		uploadPanel.add(keyFile, "cell 0 6 2 1,growx");

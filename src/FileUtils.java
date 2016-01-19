@@ -91,10 +91,4 @@ public class FileUtils
 
         return s3;
     }
-
-    public static void main(String[] args) {
-        File f = new File("C:\\Users\\Computer\\Documents\\txt\\test.txt");
-        uploadFile(f, "test.txt");
-        downloadFile("C:\\Users\\Computer\\Documents\\txt\\testdown.txt", "test.txt");
-    }
 }
