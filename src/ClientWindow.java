@@ -121,16 +121,16 @@ public class ClientWindow {
 			public void mouseClicked(MouseEvent e) {
 				writeLog("Uploading file...");
 				Map<String, String> map = SSE.EDBSetup(selectedFile, AES.secretKey);
-                //ObjectMapper mapper = new ObjectMapper();
-                //try {
-					//String json = mapper.writeValueAsString(map);
-					//System.out.println(json);
-					HttpUtil.HttpPost(map);
-				//}
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+					String json = mapper.writeValueAsString(map);
+					System.out.println(json);
+					HttpUtil.HttpPost(json);
+				}
                 
-                //catch (JsonProcessingException e1) {
-					//e1.printStackTrace();
-				//}
+                catch (JsonProcessingException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		
@@ -212,7 +212,8 @@ public class ClientWindow {
 				//get request
 				//result should be list of ind
 				//HashMap<String, ArrayList<String>> encIndex = HttpUtil.HttpGet(keyWord[0]);
-				HashMap<String, String> encIndex = HttpUtil.HttpGet(keyWord[0]);
+				//HashMap<String, String> encIndex = HttpUtil.HttpGet(keyWord[0]);
+				
 				//gets set of encrypted ids and decrypts
 				//SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 				//ArrayList <String> values, ids = new ArrayList<String>();
@@ -229,15 +230,11 @@ public class ClientWindow {
 					}
 				}
 				*/
-				for (Entry<String, String> entry: encIndex.entrySet()){
-					writeLog("key is: " + entry.getKey() + " and value is: " + entry.getValue());
-				}
 				
-				//List<String> inds = new ArrayList<>();
-				//searchResults.addElement("Resulting ids: ");
-				//for (String i : ids) {
-					//searchResults.addElement(i);
-				//}
+				List<String> inds = HttpUtil.HttpGet(keyWord[0]);
+				for (String i : inds) {
+					searchResults.addElement(i);
+				}
 				//searchResults.addElement("Some result");
 			}
 		});
