@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -13,9 +12,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
