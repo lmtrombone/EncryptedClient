@@ -2,6 +2,7 @@ package edu.ucsb.hopefully_unhackable.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,14 +42,24 @@ public class UploadHandlers {
 		};
 	}
 	
-	public static ActionListener getUploadHandler() {
+	public static ActionListener getUploadHandler(JTextField filePath) {
 		return new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (filePath.getText() != ""){
+					File fileFromType = new File(filePath.getText());
+					if(fileFromType.isAbsolute()){
+						ClientWindow.selectedFile = fileFromType;
+					}
+				}
+				
 				if (ClientWindow.selectedFile == null) {
 					JOptionPane.showMessageDialog(null, "Please select a file");
 					return;
 				}
+				
+				
+						
 				ClientWindow.writeLog("Encrypting file...");
 				//for now uses same key to encrypt keywords
 				String key = UUID.randomUUID().toString();
