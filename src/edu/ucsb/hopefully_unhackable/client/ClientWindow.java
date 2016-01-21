@@ -13,6 +13,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+//mouse adapater
+import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.SwingUtilities;
+
 import net.miginfocom.swing.MigLayout;
 
 public class ClientWindow {
@@ -65,7 +71,7 @@ public class ClientWindow {
 		
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler());
+		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath));
 		
 		// Add Handlers (Search)
 		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, searchResults));
@@ -98,7 +104,13 @@ public class ClientWindow {
 		JLabel lblNewLabel = new JLabel("Path:");
 		uploadPanel.add(lblNewLabel, "cell 0 0");
 		
-		filePath = new JTextField();
+		//added mouse listener
+		filePath = new JTextField("Enter file path here...");
+		filePath.addMouseListener(new MouseAdapter(){
+			public void mouseClicked(MouseEvent e){
+                filePath.setText("");
+            }
+		});
 		uploadPanel.add(filePath, "cell 1 0");
 		filePath.setColumns(10);
 		
@@ -118,7 +130,13 @@ public class ClientWindow {
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
 		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
 		
-		queryField = new JTextField();
+		//added mouse listener
+		queryField = new JTextField("Enter keywords here...");
+		queryField.addMouseListener(new MouseAdapter(){
+			public void mouseClicked(MouseEvent e){
+                queryField.setText("");
+            }
+		});
 		searchPanel.add(queryField, "flowx,cell 0 0,growx");
 		queryField.setColumns(10);
 		
