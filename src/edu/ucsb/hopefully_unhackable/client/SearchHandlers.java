@@ -18,7 +18,7 @@ import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
 
 public class SearchHandlers {
-	public static ActionListener getSearchHandler(JTextField queryField, DefaultListModel<String> searchResults) {
+	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, DefaultListModel<String> searchResults) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (AESCTR.secretKey == null) {
@@ -26,7 +26,7 @@ public class SearchHandlers {
 					return;
 				}
 				//String[] keywords = queryField.getText().split(" +");
-				String[] keyWord = queryField.getText().split(" ");
+				String[] keyWord = queryField.getText().trim().split(" ");
 				if(keyWord.length != 1) {
 					System.out.println("Only single word search is supported."
 							+ "Searching for documents with only the first search term.");
@@ -63,12 +63,15 @@ public class SearchHandlers {
 				searchResults.clear();
 				if (ids.length == 0) {
 					searchResults.addElement("No results...");
+					list.setEnabled(false);
 				} else {
 					String[] x = new String[ids.length];
 					for(int i = 0; i < ids.length; i++) {
 						x[i] = AESCTR.decrypt(ids[i], kE);
 						searchResults.addElement(x[i]);
 					}
+					list.setSelectedIndex(0);
+					list.setEnabled(true);
 				}
 			}
 		};

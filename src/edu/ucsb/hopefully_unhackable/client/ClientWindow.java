@@ -73,7 +73,6 @@ public class ClientWindow {
 		// Load default key
 		File file = new File("keys/defaultkey");
 		try {
-			
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
 			AESCTR.secretKey = (SecretKey) in.readObject(); // Set secretKey
 			in.close();
@@ -102,11 +101,13 @@ public class ClientWindow {
 		btnUpload.addActionListener(UploadHandlers.getUploadHandler());
 		
 		// Add Handlers (Search)
-		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, searchResults));
+		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
 		
 		// Add Handlers (Settings)
 		btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));
+		
+		searchPanel.getRootPane().setDefaultButton(btnSearch);
 	}
 	
 	public static void writeLog(String str) {
