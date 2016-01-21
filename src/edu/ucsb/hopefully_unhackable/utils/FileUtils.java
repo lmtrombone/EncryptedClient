@@ -1,3 +1,4 @@
+package edu.ucsb.hopefully_unhackable.utils;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;

@@ -1,18 +1,18 @@
+package edu.ucsb.hopefully_unhackable.crypto;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
-public class SSE{
+public class SSE {
 	public static HashMap<String, String> Tset;
 	//public static HashMap<String, ArrayList<String>> Tset;
 	
-	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS, String key){
+	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS, String key) {
 		
 		//TODO: Parse documents with indexing
 		
@@ -20,7 +20,7 @@ public class SSE{
 		SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 		//Tset = new HashMap<String, ArrayList<String>>();
 		Tset = new HashMap<String, String>();
-		for (int i = 0; i < fileWords.length; i++){
+		for (int i = 0; i < fileWords.length; i++) {
 			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
 			String encWord = SHA256.createIndexingString(kE, fileWords[i]).replace("+", "X"); // remove + signs TEMP FIX TODO
@@ -55,7 +55,7 @@ public class SSE{
 	//TODO: Look into Kt
 	
 	//reads file and returns unique words in an array
-	public static String[] readFile(File selectedFile){
+	public static String[] readFile(File selectedFile) {
 		Scanner fileScanner = null;
 		try {
 			fileScanner = new Scanner(selectedFile);
@@ -64,11 +64,9 @@ public class SSE{
 		}
 	    fileScanner.useDelimiter(" |\r\n");
 	    ArrayList<String> words = new ArrayList<String>();
-	    while (fileScanner.hasNext())
-	    { 
+	    while (fileScanner.hasNext()) { 
 	    	String nextWord = fileScanner.next();
-	        if (!words.contains(nextWord))
-	        {
+	        if (!words.contains(nextWord)) {
 	            words.add(nextWord);
 	        }
 	    }
@@ -77,13 +75,12 @@ public class SSE{
 	    return words.toArray(new String[words.size()]);
 	}
 		
-	
 	//decrypts File
-	public static void decryptFile(HashMap<String, String> Tset, SecretKey kS){
+	public static void decryptFile(HashMap<String, String> Tset, SecretKey kS) {
 		String key, value;
 		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
 		SecretKey kE;
-		for(Entry<String, String> entry: Tset.entrySet()){
+		for(Entry<String, String> entry: Tset.entrySet()) {
 			kE = SHA256.createIndexingKey(kS, entry.getKey());
 			key = securityHelper.decrypt(entry.getKey(), kS);
 			value = securityHelper.decrypt(entry.getValue(), kE);

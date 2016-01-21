@@ -1,5 +1,4 @@
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+package edu.ucsb.hopefully_unhackable.crypto;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,9 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;

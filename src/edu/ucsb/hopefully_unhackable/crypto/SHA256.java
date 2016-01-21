@@ -1,3 +1,4 @@
+package edu.ucsb.hopefully_unhackable.crypto;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -7,12 +8,12 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-public class SHA256{
+public class SHA256 {
 	
 	//creates an AES key using SHA256
-	public static SecretKey createIndexingKey(SecretKey secretKey, String keyWord){
+	public static SecretKey createIndexingKey(SecretKey secretKey, String keyWord) {
 		SecretKey indexingKey = null;
-		try{
+		try {
 			//constructs a key for SHA256
 			byte[] key = secretKey.getEncoded();
 			SecretKeySpec keySpec = new SecretKeySpec(key, "HmacSHA256");
@@ -24,23 +25,18 @@ public class SHA256{
 
 			//creates AES key using result of SHA256
 			indexingKey = new SecretKeySpec(result, 0, result.length, "AES");
-		}
-		
-		catch(NoSuchAlgorithmException nosuchAlgo){
+		} catch(NoSuchAlgorithmException nosuchAlgo) {
 			System.out.println("The algorithm " + nosuchAlgo + " does not exist.");
-		} 
-		
-		catch(InvalidKeyException invalidKey){
+		} catch(InvalidKeyException invalidKey) {
 			System.out.println("Invalid key: " + invalidKey);
 		}
 		
 		return indexingKey;
 	}
 	
-	public static String createIndexingString(SecretKey secretKey, String keyWord){
-		SecretKey indexingKey = null;
+	public static String createIndexingString(SecretKey secretKey, String keyWord) {
 		String id = null;
-		try{
+		try {
 			//constructs a key for SHA256
 			byte[] key = secretKey.getEncoded();
 			SecretKeySpec keySpec = new SecretKeySpec(key, "HmacSHA256");
@@ -53,13 +49,9 @@ public class SHA256{
 			//creates AES key using result of SHA256
 			//indexingKey = new SecretKeySpec(result, 0, result.length, "AES");
 			id = Base64.getEncoder().encodeToString(result);
-		}
-		
-		catch(NoSuchAlgorithmException nosuchAlgo){
+		} catch(NoSuchAlgorithmException nosuchAlgo) {
 			System.out.println("The algorithm " + nosuchAlgo + " does not exist.");
-		} 
-		
-		catch(InvalidKeyException invalidKey){
+		} catch(InvalidKeyException invalidKey) {
 			System.out.println("Invalid key: " + invalidKey);
 		}
 		
