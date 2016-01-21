@@ -103,6 +103,7 @@ public class ClientWindow {
 		// Add Handlers (Search)
 		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
+		list.addMouseListener(SearchHandlers.getListClickHandler());
 		
 		// Add Handlers (Settings)
 		btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));

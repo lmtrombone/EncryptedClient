@@ -2,6 +2,8 @@ package edu.ucsb.hopefully_unhackable.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,9 +27,8 @@ public class SearchHandlers {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
-				//String[] keywords = queryField.getText().split(" +");
-				String[] keyWord = queryField.getText().trim().split(" ");
-				if(keyWord.length != 1) {
+				String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
+				if(keywords.length != 1) {
 					System.out.println("Only single word search is supported."
 							+ "Searching for documents with only the first search term.");
 				}
@@ -52,10 +53,10 @@ public class SearchHandlers {
 					}
 				}
 				*/
-				SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keyWord[0]);
+				SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keywords[0]);
 				List<String> inds = Collections.emptyList();
-				if (!keyWord[0].isEmpty()) {
-					String encWord = SHA256.createIndexingString(kE, keyWord[0]).replace("+", "X"); // remove + signs TEMP FIX TODO
+				if (!keywords[0].isEmpty()) {
+					String encWord = SHA256.createIndexingString(kE, keywords[0]).replace("+", "X"); // remove + signs TEMP FIX TODO
 					inds = HttpUtil.HttpGet(encWord);
 				}
 				String[] ids = inds.toArray(new String[inds.size()]);
@@ -77,28 +78,44 @@ public class SearchHandlers {
 		};
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static MouseAdapter getListClickHandler() {
+		return new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				JList<String> list = (JList<String>) e.getSource();
+		        if (e.getClickCount() == 2) {
+		            downloadFromList(list);
+		        }
+		    }
+		};
+	}
+	
 	public static ActionListener getDownloadHandler(JList<String> list) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (list.getSelectedIndex() >= 0) {
-					JFileChooser fileChooser = new JFileChooser();
-					fileChooser.setApproveButtonText("Save");
-			        fileChooser.setDialogTitle("Select a file...");
-			        
-			        // file chooser to save file
-			        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
-			        	String path = fileChooser.getSelectedFile().getAbsolutePath();
-						FileUtils.downloadFile(path, list.getSelectedValue());
-						ClientWindow.writeLog("Downloaded to " + path);
-						JOptionPane.showMessageDialog(null, "Downloaded to " + path);
-			        }
-				} else {
-					// maybe produce an error message
-					System.out.println("No file selected");
-					JOptionPane.showMessageDialog(null, "No file selected");
-				}
+				downloadFromList(list);
 			}
 		};
+	}
+	
+	private static void downloadFromList(JList<String> list) {
+		if (list.getSelectedIndex() >= 0) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setApproveButtonText("Save");
+	        fileChooser.setDialogTitle("Select a file...");
+	        
+	        // file chooser to save file
+	        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
+	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
+				FileUtils.downloadFile(path, list.getSelectedValue());
+				ClientWindow.writeLog("Downloaded to " + path);
+				JOptionPane.showMessageDialog(null, "Downloaded to " + path);
+	        }
+		} else {
+			// maybe produce an error message
+			System.out.println("No file selected");
+			JOptionPane.showMessageDialog(null, "No file selected");
+		}
 	}
 }
