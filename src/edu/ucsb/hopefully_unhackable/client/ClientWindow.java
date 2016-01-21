@@ -1,7 +1,14 @@
 package edu.ucsb.hopefully_unhackable.client;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
+import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -13,6 +20,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import edu.ucsb.hopefully_unhackable.crypto.AES;
 import net.miginfocom.swing.MigLayout;
 
 public class ClientWindow {
@@ -62,6 +70,33 @@ public class ClientWindow {
 	 */
 	public ClientWindow() {
 		initialize();
+		
+		// Load default key
+		File file = new File("keys/defaultkey");
+		try {
+			
+			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
+			AES.secretKey = (SecretKey) in.readObject(); // Set secretKey
+			in.close();
+			keyFile.setText(file.getName());
+			writeLog("Successfully loaded default key.");
+		} catch (IOException | ClassNotFoundException ex) {
+			writeLog("No default key found, generating new one.");
+			SecretKey newKey = AES.generateKey();
+			// Serialize (out)
+	        try {
+	        	new File("keys").mkdirs();
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.getAbsolutePath()));
+				out.writeObject(newKey);
+				out.close();
+				
+				AES.secretKey = newKey; // Set secretKey
+				keyFile.setText(file.getName());
+	        } catch (IOException ex2) {
+	        	writeLog("Failed to generate a default key.");
+				ex2.printStackTrace();
+			}
+		}
 		
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
