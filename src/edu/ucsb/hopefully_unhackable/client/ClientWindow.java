@@ -2,7 +2,6 @@ package edu.ucsb.hopefully_unhackable.client;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,8 +19,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import edu.ucsb.hopefully_unhackable.crypto.AES;
 import net.miginfocom.swing.MigLayout;
+import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -76,13 +75,13 @@ public class ClientWindow {
 		try {
 			
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
-			AES.secretKey = (SecretKey) in.readObject(); // Set secretKey
+			AESCTR.secretKey = (SecretKey) in.readObject(); // Set secretKey
 			in.close();
 			keyFile.setText(file.getName());
 			writeLog("Successfully loaded default key.");
 		} catch (IOException | ClassNotFoundException ex) {
 			writeLog("No default key found, generating new one.");
-			SecretKey newKey = AES.generateKey();
+			SecretKey newKey = AESCTR.generateKey();
 			// Serialize (out)
 	        try {
 	        	new File("keys").mkdirs();
@@ -90,7 +89,7 @@ public class ClientWindow {
 				out.writeObject(newKey);
 				out.close();
 				
-				AES.secretKey = newKey; // Set secretKey
+				AESCTR.secretKey = newKey; // Set secretKey
 				keyFile.setText(file.getName());
 	        } catch (IOException ex2) {
 	        	writeLog("Failed to generate a default key.");

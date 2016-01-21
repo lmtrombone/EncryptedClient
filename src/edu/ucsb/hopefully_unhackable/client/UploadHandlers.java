@@ -12,7 +12,7 @@ import javax.swing.JTextField;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.ucsb.hopefully_unhackable.crypto.AES;
+import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.crypto.SSE;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
@@ -25,7 +25,7 @@ public class UploadHandlers {
         
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (AES.secretKey == null) {
+				if (AESCTR.secretKey == null) {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
@@ -52,7 +52,7 @@ public class UploadHandlers {
 				ClientWindow.writeLog("Encrypting file...");
 				//for now uses same key to encrypt keywords
 				String key = UUID.randomUUID().toString();
-				Map<String, String> map = SSE.EDBSetup(ClientWindow.selectedFile, AES.secretKey, key);
+				Map<String, String> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key);
                 ObjectMapper mapper = new ObjectMapper();
                 try {
 					String json = mapper.writeValueAsString(map);

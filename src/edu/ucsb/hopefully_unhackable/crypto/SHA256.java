@@ -62,19 +62,19 @@ public class SHA256 {
 	public static void main(String args[]) {
 
 		//generates AES key
-		AES.generateAESEncryptionKey();
+		//AES.generateAESEncryptionKey();
 		
 		//generates another AES with previously generated AES key and a keyWord and prints it
-		SecretKey secretKey = createIndexingKey(AES.secretKey, "hello");
-		byte[] key = secretKey.getEncoded();
-		System.out.println("Secret key: " + Arrays.toString(key));
+		//SecretKey secretKey = createIndexingKey(AES.secretKey, "hello");
+		//byte[] key = secretKey.getEncoded();
+		//System.out.println("Secret key: " + Arrays.toString(key));
 		
 		//encrypts plaintext and prints it
-		String cipherText = AES.AESEncryption(secretKey, "Test");
-		System.out.println("Ciphertext generated using AES encryption is: " + cipherText);
+		//String cipherText = AES.AESEncryption(secretKey, "Test");
+		//System.out.println("Ciphertext generated using AES encryption is: " + cipherText);
 		
 		//decrypts ciphertext and prints it
-		String plainText = AES.AESDecryption(secretKey, cipherText);
-		System.out.println("Plaintext generated using AES decryption is: " + plainText);
+		//String plainText = AES.AESDecryption(secretKey, cipherText);
+		//System.out.println("Plaintext generated using AES decryption is: " + plainText);
 	}
 }

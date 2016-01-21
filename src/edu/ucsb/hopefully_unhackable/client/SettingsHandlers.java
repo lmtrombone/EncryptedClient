@@ -15,7 +15,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import edu.ucsb.hopefully_unhackable.crypto.AES;
+import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
+
+
 
 public class SettingsHandlers {
 	public static ActionListener getKeygenHandler(JTextField keyFile) {
@@ -30,7 +32,7 @@ public class SettingsHandlers {
 			        
 			        // file chooser to save key
 			        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				        SecretKey newKey = AES.generateKey();
+				        SecretKey newKey = AESCTR.generateKey();
 				        
 				        // Serialize (out)
 				        try {
@@ -40,7 +42,7 @@ public class SettingsHandlers {
 							out.close();
 							
 							// Set key in AES
-							AES.secretKey = newKey;
+							AESCTR.secretKey = newKey;
 							keyFile.setText(file.getName());
 				        } catch (IOException ex) {
 							ex.printStackTrace();
@@ -56,7 +58,7 @@ public class SettingsHandlers {
 			        	try {
 							File file = fileChooser.getSelectedFile();
 							ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
-							AES.secretKey = (SecretKey) in.readObject(); // Set secretKey
+							AESCTR.secretKey = (SecretKey) in.readObject(); // Set secretKey
 							in.close();
 							
 							keyFile.setText(file.getName()); //Should store in file and display filename instead of key
@@ -68,7 +70,7 @@ public class SettingsHandlers {
 					
 				}
 				
-				byte[] decoded = AES.secretKey.getEncoded();
+				byte[] decoded = AESCTR.secretKey.getEncoded();
 				ClientWindow.writeLog("Loaded key: " + Arrays.toString(decoded));
 			}
 		};

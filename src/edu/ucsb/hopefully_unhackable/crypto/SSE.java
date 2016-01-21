@@ -17,14 +17,13 @@ public class SSE {
 		//TODO: Parse documents with indexing
 		
 		String[] fileWords = readFile(selectedFile);
-		SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 		//Tset = new HashMap<String, ArrayList<String>>();
 		Tset = new HashMap<String, String>();
 		for (int i = 0; i < fileWords.length; i++) {
 			SecretKey kE = SHA256.createIndexingKey(kS, fileWords[i]);
 			
 			String encWord = SHA256.createIndexingString(kE, fileWords[i]).replace("+", "X"); // remove + signs TEMP FIX TODO
-			String encryptedIndex = securityHelperCTR.encrypt(key, kE);
+			String encryptedIndex = AESCTR.encrypt(key, kE);
 			//Tset.put(encryptedFileWords[i], encryptedIndex);
 			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
 			//if(Tset.get(fileWords[i]) == null){
@@ -73,18 +72,5 @@ public class SSE {
 	    fileScanner.close();
 	    
 	    return words.toArray(new String[words.size()]);
-	}
-		
-	//decrypts File
-	public static void decryptFile(HashMap<String, String> Tset, SecretKey kS) {
-		String key, value;
-		SecurityHelperCTR securityHelper = new SecurityHelperCTR();
-		SecretKey kE;
-		for(Entry<String, String> entry: Tset.entrySet()) {
-			kE = SHA256.createIndexingKey(kS, entry.getKey());
-			key = securityHelper.decrypt(entry.getKey(), kS);
-			value = securityHelper.decrypt(entry.getValue(), kE);
-			System.out.println("key is: " + key + " and value is: " + value);
-		}
 	}
 }

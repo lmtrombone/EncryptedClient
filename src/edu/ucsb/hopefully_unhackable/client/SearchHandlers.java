@@ -12,9 +12,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import edu.ucsb.hopefully_unhackable.crypto.AES;
+import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.crypto.SHA256;
-import edu.ucsb.hopefully_unhackable.crypto.SecurityHelperCTR;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
 
@@ -22,7 +21,7 @@ public class SearchHandlers {
 	public static ActionListener getSearchHandler(JTextField queryField, DefaultListModel<String> searchResults) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (AES.secretKey == null) {
+				if (AESCTR.secretKey == null) {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
@@ -53,7 +52,7 @@ public class SearchHandlers {
 					}
 				}
 				*/
-				SecretKey kE = SHA256.createIndexingKey(AES.secretKey, keyWord[0]);
+				SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keyWord[0]);
 				List<String> inds = Collections.emptyList();
 				if (!keyWord[0].isEmpty()) {
 					String encWord = SHA256.createIndexingString(kE, keyWord[0]).replace("+", "X"); // remove + signs TEMP FIX TODO
@@ -65,10 +64,9 @@ public class SearchHandlers {
 				if (ids.length == 0) {
 					searchResults.addElement("No results...");
 				} else {
-					SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
 					String[] x = new String[ids.length];
 					for(int i = 0; i < ids.length; i++) {
-						x[i] = securityHelperCTR.decrypt(ids[i], kE);
+						x[i] = AESCTR.decrypt(ids[i], kE);
 						searchResults.addElement(x[i]);
 					}
 				}
