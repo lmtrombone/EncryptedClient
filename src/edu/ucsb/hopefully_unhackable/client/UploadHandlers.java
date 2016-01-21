@@ -76,7 +76,7 @@ public class UploadHandlers {
 					return;
 				}
                 ClientWindow.writeLog("Uploading file...");
-                FileUtils.uploadFile(ClientWindow.selectedFile, key);
+                FileUtils.uploadFile(ClientWindow.selectedFile, key, AESCTR.secretKey);
                 ClientWindow.writeLog("Upload successful!");
                 JOptionPane.showMessageDialog(null, "Upload successfull!");
 			}

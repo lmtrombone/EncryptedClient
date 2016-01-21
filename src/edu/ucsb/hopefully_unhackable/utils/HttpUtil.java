@@ -78,13 +78,12 @@ public class HttpUtil{
 	}
 	*/
 	
+	//HTTP GET request
 	public static List<String> HttpGet(String keyWord){
 		 		
-		//HashMap<String, String> encIndex = null;
 		List<String> list = null;
 		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
 		//String url = "http://128.111.43.52:8080/searchfile?query=" + keyWord;
-		//System.out.println(keyWord);
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			HttpGet getRequest = new HttpGet(url);
 		 			
@@ -99,30 +98,14 @@ public class HttpUtil{
 		 	
 		 	ObjectMapper mapper = new ObjectMapper();
 		 	list = mapper.readValue(jsonString, new TypeReference<List<String>>(){});
-		 			
-		 	//JSONObject myjson = new JSONObject(jsonString);
-		 
-		    //JSONArray nameArray = myjson.names();
-		    //JSONArray valArray = myjson.toJSONArray(nameArray);
-		    //encIndex = new HashMap<String, String>();
-		    //for(int i=0;i<valArray.length();i++)
-		    //{
-		    	//System.out.println(nameArray.getString(i) + "," + valArray.getString(i));
-		        //encIndex.put(nameArray.getString(i), valArray.getString(i));
-		    //}
-		             
-		    //for (Entry<String, String> entry : encIndex.entrySet()) {
-		    	//System.out.print("key is: "+ entry.getKey() + " & Value is: ");
-		     	//System.out.println(entry.getValue());
-		    //}
-		 
-		 	}
+
+		 }
 		 		
-		 	catch(IOException e){
-		 		e.printStackTrace();
-		 	}
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		 		
-		 	return list;
+		return list;
 	}
 	
 	//HTTP POST request

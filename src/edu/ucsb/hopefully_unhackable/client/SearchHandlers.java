@@ -108,7 +108,7 @@ public class SearchHandlers {
 	        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
 	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
-				FileUtils.downloadFile(path, list.getSelectedValue());
+				FileUtils.downloadFile(path, list.getSelectedValue(), AESCTR.secretKey);
 				ClientWindow.writeLog("Downloaded to " + path);
 				JOptionPane.showMessageDialog(null, "Downloaded to " + path);
 	        }

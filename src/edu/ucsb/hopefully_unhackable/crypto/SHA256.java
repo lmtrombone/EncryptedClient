@@ -34,6 +34,7 @@ public class SHA256 {
 		return indexingKey;
 	}
 	
+	//creates encrypted string for indexing
 	public static String createIndexingString(SecretKey secretKey, String keyWord) {
 		String id = null;
 		try {
@@ -47,7 +48,6 @@ public class SHA256 {
 			byte[] result = sha256.doFinal(keyWord.getBytes());
 
 			//creates AES key using result of SHA256
-			//indexingKey = new SecretKeySpec(result, 0, result.length, "AES");
 			id = Base64.getEncoder().encodeToString(result);
 		} catch(NoSuchAlgorithmException nosuchAlgo) {
 			System.out.println("The algorithm " + nosuchAlgo + " does not exist.");
@@ -58,23 +58,4 @@ public class SHA256 {
 		return id;
 	}
 	
-	//test for HMACSHA256
-	public static void main(String args[]) {
-
-		//generates AES key
-		//AES.generateAESEncryptionKey();
-		
-		//generates another AES with previously generated AES key and a keyWord and prints it
-		//SecretKey secretKey = createIndexingKey(AES.secretKey, "hello");
-		//byte[] key = secretKey.getEncoded();
-		//System.out.println("Secret key: " + Arrays.toString(key));
-		
-		//encrypts plaintext and prints it
-		//String cipherText = AES.AESEncryption(secretKey, "Test");
-		//System.out.println("Ciphertext generated using AES encryption is: " + cipherText);
-		
-		//decrypts ciphertext and prints it
-		//String plainText = AES.AESDecryption(secretKey, cipherText);
-		//System.out.println("Plaintext generated using AES decryption is: " + plainText);
-	}
 }
