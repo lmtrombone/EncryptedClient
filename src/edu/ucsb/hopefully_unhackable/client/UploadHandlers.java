@@ -48,17 +48,16 @@ public class UploadHandlers {
 			public void actionPerformed(ActionEvent e) {
 				if (filePath.getText() != ""){
 					File fileFromType = new File(filePath.getText());
-					if(fileFromType.isAbsolute()){
+					if(fileFromType.isAbsolute() && fileFromType.exists()){
 						ClientWindow.selectedFile = fileFromType;
+					} else {
+						JOptionPane.showMessageDialog(null, "Invalid path to file");
+						return;
 					}
-				}
-				
-				if (ClientWindow.selectedFile == null) {
+				} else {
 					JOptionPane.showMessageDialog(null, "Please select a file");
 					return;
 				}
-				
-				
 						
 				ClientWindow.writeLog("Encrypting file...");
 				//for now uses same key to encrypt keywords
