@@ -39,7 +39,9 @@ public class FileUtils
             OutputStream out = new PipedOutputStream(in);
             InputStream reader = new BufferedInputStream(new FileInputStream(file));
             byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] nonceBuffer = new byte[AESCTR.NONCE_SIZE + BUFFER_SIZE];
             int bytesRead;
+            AESCTR.generateRandomNonce(nonceBuffer, 0, AESCTR.NONCE_SIZE);
             while ((bytesRead = reader.read(buffer)) > -1) {
                 byte[] trunBuffer = null;
                 byte[] encBuffer;
@@ -49,7 +51,7 @@ public class FileUtils
                 else{
                 	trunBuffer = buffer;
                 }
-            	encBuffer = AESCTR.encryptbytes(trunBuffer, secretKey);
+            	encBuffer = AESCTR.encryptbytes(trunBuffer, secretKey, nonceBuffer);
                 out.write(encBuffer, 0, encBuffer.length);
             }
             out.flush();
@@ -121,7 +123,8 @@ public class FileUtils
     
     public static int findEncBufferSize(SecretKey secretKey){
     	byte[] buffer = new byte[BUFFER_SIZE];
-    	return AESCTR.encryptbytes(buffer, secretKey).length;
+    	//return AESCTR.encryptbytes(buffer, secretKey).length;
+    	return 1;
     }
     
 }
