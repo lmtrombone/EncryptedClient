@@ -84,7 +84,9 @@ public class SearchHandlers {
 			public void mouseClicked(MouseEvent e) {
 				JList<String> list = (JList<String>) e.getSource();
 		        if (e.getClickCount() == 2) {
-		            downloadFromList(list);
+		        	if (list.getSelectedIndex() != -1) {
+		        		downloadFromList(list);		        		
+		        	}
 		        }
 		    }
 		};

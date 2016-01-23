@@ -90,13 +90,11 @@ public class ClientWindow {
 					hasDefaultKey = true;
 				}
 			} catch (IOException | ClassNotFoundException ex) {
-				System.out.println(ex);
+				// Not a key file, don't add to list
 			}
 		}
 		
 		// Load default key
-		System.out.println(Arrays.toString(files));
-		
 		if (hasDefaultKey) {
 			keyFile.setSelectedItem(new KeyItem(null, "defaultkey"));
 			AESCTR.secretKey = keyFile.getItemAt(keyFile.getSelectedIndex()).getKey();
