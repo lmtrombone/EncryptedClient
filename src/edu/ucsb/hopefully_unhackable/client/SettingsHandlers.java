@@ -3,75 +3,79 @@ package edu.ucsb.hopefully_unhackable.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
 
 import javax.crypto.SecretKey;
-import javax.swing.JFileChooser;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 
 
-
+@SuppressWarnings("unchecked")
 public class SettingsHandlers {
-	public static ActionListener getKeygenHandler(JTextField keyFile) {
+	public static ActionListener selectKeyHandler() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				
-				// Would you like to load or generate key?
-				if (JOptionPane.showConfirmDialog(null, "Would you like to generate a new key?", "New Key?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					fileChooser.setApproveButtonText("Save");
-			        fileChooser.setDialogTitle("Select a file to save key...");
-			        
-			        // file chooser to save key
-			        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				        SecretKey newKey = AESCTR.generateKey();
-				        
-				        // Serialize (out)
-				        try {
-				        	File file = fileChooser.getSelectedFile();
-							ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.getAbsolutePath()));
-							out.writeObject(newKey);
-							out.close();
-							
-							// Set key in AES
-							AESCTR.secretKey = newKey;
-							keyFile.setText(file.getName());
-				        } catch (IOException ex) {
-							ex.printStackTrace();
-						}
-			        }
-				} else {
-					fileChooser.setApproveButtonText("Load");
-			        fileChooser.setDialogTitle("Select a file to load key...");
-			        
-					//file chooser to load key
-			        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			        	// Deserialize (in)
-			        	try {
-							File file = fileChooser.getSelectedFile();
-							ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
-							AESCTR.secretKey = (SecretKey) in.readObject(); // Set secretKey
-							in.close();
-							
-							keyFile.setText(file.getName()); //Should store in file and display filename instead of key
-						} catch (IOException | ClassNotFoundException ex) {
-							ex.printStackTrace();
-							JOptionPane.showMessageDialog(null, "Invalid key file!");
-						}
-			        }
-					
+				Object o = e.getSource();
+				if (!(o instanceof JComboBox)) {
+					throw new IllegalStateException("selectKeyHandler attached to invalid control");
 				}
 				
-				byte[] decoded = AESCTR.secretKey.getEncoded();
-				ClientWindow.writeLog("Loaded key: " + Arrays.toString(decoded));
+				JComboBox<KeyItem> box = (JComboBox<KeyItem>) o;
+				AESCTR.secretKey = box.getItemAt(box.getSelectedIndex()).getKey();
+				ClientWindow.writeLog("Successfully loaded key: " + box.getSelectedItem());
+			}
+		};
+	}
+	
+	public static ActionListener removeKeyHandler(JComboBox<KeyItem> keyFile) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Object[] options = { "OK", "CANCEL" };
+				if (JOptionPane.showOptionDialog(null, "Are you sure you want to delete the key: " + keyFile.getSelectedItem() + 
+						"?\nThis CANNOT be undone.", "WARNING: Delete Key?", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, 
+						null, options, options[1]) == JOptionPane.OK_OPTION) {
+					String keyName = keyFile.getSelectedItem().toString();
+					File file = new File("keys/" + keyName);
+					if (file.delete()) {
+						ClientWindow.writeLog("Successfully deleted key: " + keyName);
+						keyFile.removeItemAt(keyFile.getSelectedIndex());
+					} else {
+						ClientWindow.writeLog("Unable to delete file");
+					}
+				}
+			}
+		};
+	}
+	
+	public static ActionListener getKeygenHandler(JComboBox<KeyItem> keyFile) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String keyName = JOptionPane.showInputDialog("Please enter a name for your key");
+				if (keyName != null && !keyName.isEmpty()) {
+			        SecretKey newKey = AESCTR.generateKey();
+			        
+			        // Serialize (out)
+			        try {
+			        	File file = new File("keys/" + keyName);
+						ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.getAbsolutePath()));
+						out.writeObject(newKey);
+						out.close();
+						
+						// Set key in AES
+						AESCTR.secretKey = newKey;
+						
+						KeyItem keyItem = new KeyItem(newKey, file.getName());
+						keyFile.addItem(keyItem);
+						keyFile.setSelectedItem(keyItem);
+						ClientWindow.writeLog("Loaded new key: " + file.getName());
+			        } catch (IOException ex) {
+						ex.printStackTrace();
+					}
+				}
 			}
 		};
 	}

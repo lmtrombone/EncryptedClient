@@ -1,18 +1,18 @@
 package edu.ucsb.hopefully_unhackable.client;
 
 import java.awt.EventQueue;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -49,8 +49,9 @@ public class ClientWindow {
 
 	// Settings Tab
 	private JPanel settingPanel;
-	private JTextField keyFile;
+	private JComboBox<KeyItem> keyFile;
 	private JButton btnKeygen;
+	private JButton btnRemove;
 
 	/**
 	 * Launch the application.
@@ -75,16 +76,34 @@ public class ClientWindow {
 	public ClientWindow() {
 		initialize();
 
+		// Load all keys
+		File folder = new File("keys");
+		File[] files = folder.listFiles();
+		boolean hasDefaultKey = false;
+		for (File file : files) {
+			try {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
+				SecretKey kS = (SecretKey) in.readObject(); // Set secretKey
+				in.close();
+				keyFile.addItem(new KeyItem(kS, file.getName()));
+				if (file.getName().equals("defaultkey")) {
+					hasDefaultKey = true;
+				}
+			} catch (IOException | ClassNotFoundException ex) {
+				System.out.println(ex);
+			}
+		}
+		
 		// Load default key
-		File file = new File("keys/defaultkey");
-		try {
-			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
-			AESCTR.secretKey = (SecretKey) in.readObject(); // Set secretKey
-			in.close();
-			keyFile.setText(file.getName());
-			writeLog("Successfully loaded default key.");
-		} catch (IOException | ClassNotFoundException ex) {
-			writeLog("No default key found, generating new one.");
+		System.out.println(Arrays.toString(files));
+		
+		if (hasDefaultKey) {
+			keyFile.setSelectedItem(new KeyItem(null, "defaultkey"));
+			AESCTR.secretKey = keyFile.getItemAt(keyFile.getSelectedIndex()).getKey();
+			ClientWindow.writeLog("Successfully loaded key: defaultkey");
+		} else {
+			writeLog("No default key found, generating new one");
+			File file = new File("keys/defaultkey");
 			SecretKey newKey = AESCTR.generateKey();
 			// Serialize (out)
 			try {
@@ -94,9 +113,12 @@ public class ClientWindow {
 				out.close();
 
 				AESCTR.secretKey = newKey; // Set secretKey
-				keyFile.setText(file.getName());
+				
+				KeyItem keyItem = new KeyItem(newKey, file.getName());
+				keyFile.addItem(keyItem);
+				keyFile.setSelectedItem(keyItem);
 			} catch (IOException ex2) {
-				writeLog("Failed to generate a default key.");
+				writeLog("Failed to generate a default key");
 				ex2.printStackTrace();
 			}
 		}
@@ -111,6 +133,8 @@ public class ClientWindow {
 		list.addMouseListener(SearchHandlers.getListClickHandler());
 
 		// Add Handlers (Settings)
+		keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
+		btnRemove.addActionListener(SettingsHandlers.removeKeyHandler(keyFile));
 		btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));
 
 		searchPanel.getRootPane().setDefaultButton(btnSearch);
@@ -125,7 +149,7 @@ public class ClientWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame("Client");
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 550, 350);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new MigLayout("", "[grow]", "[grow][grow,fill][][]"));
 
@@ -153,6 +177,7 @@ public class ClientWindow {
 		uploadPanel.add(scrollPane, "cell 0 1 2 2,grow");
 
 		outputLog = new JTextArea();
+		outputLog.setEditable(false);
 		scrollPane.setViewportView(outputLog);
 
 		btnUpload = new JButton("Upload");
@@ -181,14 +206,16 @@ public class ClientWindow {
 		searchPanel.add(btnDownload, "cell 1 1");
 
 		settingPanel = new JPanel();
-		tabbedPane.addTab("Settings", null, settingPanel, null);
-		settingPanel.setLayout(new MigLayout("", "[grow][]", "[28.00,fill]"));
+		tabbedPane.addTab("Settings", null, settingPanel, "Settings");
+		settingPanel.setLayout(new MigLayout("", "[grow][][]", "[28.00,fill][]"));
 
-		keyFile = new JTextField();
-		keyFile.setColumns(10);
+		keyFile = new JComboBox<>();
 		settingPanel.add(keyFile, "cell 0 0,growx");
+		
+		btnRemove = new JButton("Remove");
+		settingPanel.add(btnRemove, "cell 1 0");
 
-		btnKeygen = new JButton("Keygen");
-		settingPanel.add(btnKeygen, "cell 1 0");
+		btnKeygen = new JButton("   New   ");
+		settingPanel.add(btnKeygen, "cell 2 0");
 	}
 }
