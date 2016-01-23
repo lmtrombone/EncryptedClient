@@ -37,7 +37,7 @@ public class AESCTR {
 		}
 	}
     
-    public static int generateRandomNonce(final byte[] nonceBuffer,
+    private static int generateRandomNonce(final byte[] nonceBuffer,
             final int offset, final int size) {
         final SecureRandom rng = new SecureRandom();
         final byte[] nonce = new byte[size];
@@ -91,7 +91,8 @@ public class AESCTR {
     	
     	String plainText = null;
         
-        try {        	
+        try {
+        	
         	final byte[] nonceAndCiphertext = DatatypeConverter
                     .parseBase64Binary(encrypted);
         	Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
@@ -113,12 +114,13 @@ public class AESCTR {
         return plainText;
     }
     
-    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey, byte[] nonceBuffer) {
+    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey) {
         
     	byte[] byteCipherText = null;
         try {
         	final byte[] plaintext = bytefile;
-            final byte[] nonceAndCiphertext = nonceBuffer;
+            final byte[] nonceAndCiphertext = new byte[NONCE_SIZE
+                    + plaintext.length];
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
             int offset = generateRandomNonce(nonceAndCiphertext, 0, NONCE_SIZE);
@@ -211,10 +213,10 @@ public class AESCTR {
         
         System.out.println("Plaintext: " + Arrays.toString(secret.getBytes()));
         
-        // byte[] byteCipherText = encryptbytes(secret.getBytes(), secretKey);
-        //System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
+        byte[] byteCipherText = encryptbytes(secret.getBytes(), secretKey);
+        System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
         
-        //byte[] bytePlainText = decryptbytes(byteCipherText, secretKey);
-        //System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
+        byte[] bytePlainText = decryptbytes(byteCipherText, secretKey);
+        System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
     }
 }

@@ -37,6 +37,7 @@ public class UploadHandlers {
 	                ClientWindow.selectedFile = fileChooser.getSelectedFile();
 	                filePath.setText(ClientWindow.selectedFile.getAbsolutePath());
 	                ClientWindow.writeLog("Selected file: " + ClientWindow.selectedFile.getName());
+	                ((HintTextField) filePath).setShowingHint(false);
 	            }
 			}
 		};
@@ -55,7 +56,7 @@ public class UploadHandlers {
 						return;
 					}
 				} else {
-					JOptionPane.showMessageDialog(null, "Pleasezzz select a file");
+					JOptionPane.showMessageDialog(null, "Please select a file");
 					return;
 				}
 						
