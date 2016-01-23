@@ -33,20 +33,16 @@ public class FileUtils
     public static void uploadFile(File file, String id, SecretKey secretKey) {
         AmazonS3 s3 = getClient();
 
-        // Upload the files (no encryption)
-        //s3.putObject(BUCKET, id, file);
-
         // Encrypted method
         PipedInputStream in = new PipedInputStream();
         try {
             OutputStream out = new PipedOutputStream(in);
             InputStream reader = new BufferedInputStream(new FileInputStream(file));
             byte[] buffer = new byte[BUFFER_SIZE];
-
+            byte[] nonceBuffer = new byte[AESCTR.NONCE_SIZE + BUFFER_SIZE];
             int bytesRead;
+            AESCTR.generateRandomNonce(nonceBuffer, 0, AESCTR.NONCE_SIZE);
             while ((bytesRead = reader.read(buffer)) > -1) {
-                System.out.println(Arrays.toString(buffer));
-                System.out.println(bytesRead);
                 byte[] trunBuffer = null;
                 byte[] encBuffer;
                 if(bytesRead < BUFFER_SIZE){
@@ -55,11 +51,7 @@ public class FileUtils
                 else{
                 	trunBuffer = buffer;
                 }
-                System.out.println(Arrays.toString(trunBuffer));
-                System.out.println(trunBuffer.length);
-            	encBuffer = AESCTR.encryptbytes(trunBuffer, secretKey);
-            	System.out.println(Arrays.toString(encBuffer));
-            	System.out.println(encBuffer.length);
+            	encBuffer = AESCTR.encryptbytes(trunBuffer, secretKey, nonceBuffer);
                 out.write(encBuffer, 0, encBuffer.length);
             }
             out.flush();
@@ -67,6 +59,7 @@ public class FileUtils
             reader.close();
 
             ObjectMetadata metadata = new ObjectMetadata();
+            System.out.println(in.available());
             metadata.setContentLength(in.available());
             s3.putObject(BUCKET, id, in, metadata);
         } catch (IOException ex) {
@@ -80,21 +73,17 @@ public class FileUtils
         GetObjectRequest objReq = new GetObjectRequest(BUCKET, id);
         File file = new File(path);
 
-        // No encryption method
-        //s3.getObject(objReq, file);
-
         //Decrypted method
         InputStream in = s3.getObject(objReq).getObjectContent();
         try {
             OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
-            byte[] buffer = new byte[BUFFER_SIZE];
+            int encBufferSize = findEncBufferSize(secretKey);
+            byte[] buffer = new byte[encBufferSize];
             int bytesRead;
             while ((bytesRead = in.read(buffer)) > -1) {
-                System.out.println(Arrays.toString(buffer));
-                System.out.println(buffer.length);
                 byte[] trunBuffer = null;
                 byte[] decBuffer;
-                if(bytesRead < BUFFER_SIZE){
+                if(bytesRead < encBufferSize){
                 	trunBuffer = Arrays.copyOf(buffer, bytesRead);
                 }
                 else{
@@ -102,6 +91,7 @@ public class FileUtils
                 }
             	decBuffer = AESCTR.decryptbytes(trunBuffer, secretKey);
                 out.write(decBuffer, 0, decBuffer.length);
+            	
             }
             out.flush();
             out.close();
@@ -129,6 +119,12 @@ public class FileUtils
         s3.setRegion(usWest2);
 
         return s3;
+    }
+    
+    public static int findEncBufferSize(SecretKey secretKey){
+    	byte[] buffer = new byte[BUFFER_SIZE];
+    	//return AESCTR.encryptbytes(buffer, secretKey).length;
+    	return 1;
     }
     
 }
