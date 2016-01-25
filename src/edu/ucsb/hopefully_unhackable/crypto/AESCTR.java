@@ -114,7 +114,7 @@ public class AESCTR {
         return plainText;
     }
     
-    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey) {
+    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey, byte[] nonce) {
         
     	byte[] byteCipherText = null;
         try {
@@ -123,7 +123,8 @@ public class AESCTR {
                     + plaintext.length];
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-            int offset = generateRandomNonce(nonceAndCiphertext, 0, NONCE_SIZE);
+            int offset = NONCE_SIZE;
+            System.arraycopy(nonce, 0, nonceAndCiphertext, 0, NONCE_SIZE);
             final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
                     0, NONCE_SIZE, cipher.getBlockSize());
             cipher.init(Cipher.ENCRYPT_MODE, secretKey,
@@ -213,10 +214,10 @@ public class AESCTR {
         
         System.out.println("Plaintext: " + Arrays.toString(secret.getBytes()));
         
-        byte[] byteCipherText = encryptbytes(secret.getBytes(), secretKey);
-        System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
+        //byte[] byteCipherText = encryptbytes(secret.getBytes(), secretKey);
+        //System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
         
-        byte[] bytePlainText = decryptbytes(byteCipherText, secretKey);
-        System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
+        //byte[] bytePlainText = decryptbytes(byteCipherText, secretKey);
+        //System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
     }
 }
