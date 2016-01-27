@@ -4,8 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
@@ -27,49 +32,34 @@ public class SearchHandlers {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
+				
+				// Split query into keywords
 				String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
-				if(keywords.length != 1) {
-					System.out.println("Only single word search is supported."
-							+ "Searching for documents with only the first search term.");
-				}
-				//get request
-				//result should be list of ind
-				//HashMap<String, ArrayList<String>> encIndex = HttpUtil.HttpGet(keyWord[0]);
-				//HashMap<String, String> encIndex = HttpUtil.HttpGet(keyWord[0]);
-				
-				//gets set of encrypted ids and decrypts
-				//SecurityHelperCTR securityHelperCTR = new SecurityHelperCTR();
-				//ArrayList <String> values, ids = new ArrayList<String>();
-				//ArrayList <String> ids = new ArrayList<String>();
-				/*
-				for (Entry<String, ArrayList<String>> entry : encIndex.entrySet()) {
-					String key = entry.getKey();
-					System.out.println("Key: " + key);
-					values = entry.getValue();
-					for(int i = 0; i < values.size(); i++){
-						System.out.println("Values: " + values.get(i));
-						SecretKey kE = SHA256.createIndexingKey(AES.secretKey, key);
-						ids.add(securityHelperCTR.decrypt(values.get(i), kE));
+				List<Set<String>> listSet = new ArrayList<>();
+				for (String keyword : keywords) {
+					if (keyword.isEmpty()) continue;
+					SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keyword);
+					String encWord = SHA256.createIndexingString(kE, keyword).replace("+", "X"); // remove + signs TEMP FIX TODO
+					Set<String> inds = HttpUtil.HttpGet(encWord);
+					// Decrypt all inds and add to listSet
+					Set<String> decInds = new HashSet<>();
+					for (String ind : inds) {
+						decInds.add(AESCTR.decrypt(ind, kE));
 					}
+					listSet.add(decInds);
 				}
-				*/
-				SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keywords[0]);
-				List<String> inds = Collections.emptyList();
-				if (!keywords[0].isEmpty()) {
-					String encWord = SHA256.createIndexingString(kE, keywords[0]).replace("+", "X"); // remove + signs TEMP FIX TODO
-					inds = HttpUtil.HttpGet(encWord);
-				}
-				String[] ids = inds.toArray(new String[inds.size()]);
 				
+				// Perform set intersections on results
+				Set<String> results = intersect(listSet);
+				
+				// Add results to gui, and set selected
 				searchResults.clear();
-				if (ids.length == 0) {
+				if (results.isEmpty()) {
 					searchResults.addElement("No results...");
 					list.setEnabled(false);
 				} else {
-					String[] x = new String[ids.length];
-					for(int i = 0; i < ids.length; i++) {
-						x[i] = AESCTR.decrypt(ids[i], kE);
-						searchResults.addElement(x[i]);
+					for (String result : results) {
+						searchResults.addElement(result);
 					}
 					list.setSelectedIndex(0);
 					list.setEnabled(true);
@@ -119,5 +109,33 @@ public class SearchHandlers {
 			System.out.println("No file selected");
 			JOptionPane.showMessageDialog(null, "No file selected");
 		}
+	}
+	
+	private static Set<String> intersect(List<Set<String>> sets) {
+		if (sets.size() < 1) {
+			return null;
+		}
+		// Sort sets by size (ascending)
+		Collections.sort(sets, new Comparator<Set<String>>() {
+			@Override
+			public int compare(Set<String> o1, Set<String> o2) {
+				return Integer.compare(o1.size(), o2.size());
+			}
+		});
+		
+		Set<String> newSet = sets.get(0);
+		for (Set<String> set : sets) {
+			if (newSet.size() < 1) break;
+			if (set == newSet) continue;
+			
+			Iterator<String> it = newSet.iterator();
+			while (it.hasNext()) {
+				if (!set.contains(it.next())) {
+					it.remove();
+				}
+			}
+		}
+		
+		return newSet;
 	}
 }

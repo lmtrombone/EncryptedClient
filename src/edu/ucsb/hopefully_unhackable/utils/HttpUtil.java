@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -79,33 +79,26 @@ public class HttpUtil{
 	*/
 	
 	//HTTP GET request
-	public static List<String> HttpGet(String keyWord){
-		 		
-		List<String> list = null;
+	public static Set<String> HttpGet(String keyWord) {	
+		Set<String> set = null;
 		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
 		//String url = "http://128.111.43.52:8080/searchfile?query=" + keyWord;
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
+		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			HttpGet getRequest = new HttpGet(url);
-		 			
 		 	HttpResponse response = httpClient.execute(getRequest);
-		 			
-		 	if(response.getStatusLine().getStatusCode() != 200){
+		 	if(response.getStatusLine().getStatusCode() != 200) {
 		 		throw new RuntimeException("Failed : HTTP error code : "
 		 				+ response.getStatusLine().getStatusCode());
 		 	}
 		 			
 		 	String jsonString = EntityUtils.toString(response.getEntity());
-		 	
 		 	ObjectMapper mapper = new ObjectMapper();
-		 	list = mapper.readValue(jsonString, new TypeReference<List<String>>(){});
-
-		 }
-		 		
-		catch(IOException e){
+		 	set = mapper.readValue(jsonString, new TypeReference<Set<String>>(){});
+		} catch(IOException e) {
 			e.printStackTrace();
 		}
 		 		
-		return list;
+		return set;
 	}
 	
 	//HTTP POST request

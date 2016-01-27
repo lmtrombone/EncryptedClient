@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
@@ -161,9 +160,7 @@ public class ClientWindow {
 		JLabel lblNewLabel = new JLabel("Path:");
 		uploadPanel.add(lblNewLabel, "cell 0 0");
 
-		// added mouse listener
 		filePath = new HintTextField("Enter file path here...");
-		//addBanner(filePath, "Enter file path here...");
 
 		uploadPanel.add(filePath, "cell 1 0");
 		filePath.setColumns(10);
@@ -185,9 +182,7 @@ public class ClientWindow {
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
 		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
 
-		// added mouse listener
 		queryField = new HintTextField("Enter keywords here...");
-		//addBanner(queryField, "Enter keywords here...");
 
 		searchPanel.add(queryField, "flowx,cell 0 0,growx");
 		queryField.setColumns(10);
