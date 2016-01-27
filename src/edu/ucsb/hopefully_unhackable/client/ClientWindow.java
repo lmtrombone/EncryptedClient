@@ -24,6 +24,7 @@ import javax.swing.SwingConstants;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import net.miginfocom.swing.MigLayout;
+import javax.swing.JSlider;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -51,6 +52,7 @@ public class ClientWindow {
 	private JComboBox<KeyItem> keyFile;
 	private JButton btnKeygen;
 	private JButton btnRemove;
+	private JSlider matchSlider;
 
 	/**
 	 * Launch the application.
@@ -125,8 +127,9 @@ public class ClientWindow {
 		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath));
 
 		// Add Handlers (Search)
-		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults));
+		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
+		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
 		list.addMouseListener(SearchHandlers.getListClickHandler());
 
 		// Add Handlers (Settings)
@@ -180,7 +183,7 @@ public class ClientWindow {
 
 		searchPanel = new JPanel();
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
-		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][grow]"));
+		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][][grow]"));
 
 		queryField = new HintTextField("Enter keywords here...");
 
@@ -193,10 +196,20 @@ public class ClientWindow {
 		list = new JList<>();
 		searchResults = new DefaultListModel<>();
 		list.setModel(searchResults);
-		searchPanel.add(list, "cell 0 1 1 2,grow");
+		searchPanel.add(list, "cell 0 1 1 3,grow");
 
 		btnDownload = new JButton("Download");
 		searchPanel.add(btnDownload, "cell 1 1");
+		
+		matchSlider = new JSlider();
+		matchSlider.setMinimum(1);
+		matchSlider.setPaintTicks(true);
+		matchSlider.setSnapToTicks(true);
+		matchSlider.setValue(1);
+		matchSlider.setMinorTickSpacing(1);
+		matchSlider.setMajorTickSpacing(1);
+		matchSlider.setMaximum(1);
+		searchPanel.add(matchSlider, "cell 1 2");
 
 		settingPanel = new JPanel();
 		tabbedPane.addTab("Settings", null, settingPanel, "Settings");

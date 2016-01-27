@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -17,7 +18,14 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.crypto.SHA256;
@@ -25,7 +33,11 @@ import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
 
 public class SearchHandlers {
-	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, DefaultListModel<String> searchResults) {
+	private static List<Set<String>> listSet = new ArrayList<>();
+	private static boolean modifying = true;
+	
+	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, 
+			DefaultListModel<String> searchResults, JSlider matchSlider) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (AESCTR.secretKey == null) {
@@ -35,11 +47,12 @@ public class SearchHandlers {
 				
 				// Split query into keywords
 				String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
-				List<Set<String>> listSet = new ArrayList<>();
+				listSet.clear();
 				for (String keyword : keywords) {
 					if (keyword.isEmpty()) continue;
 					SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keyword);
-					String encWord = SHA256.createIndexingString(kE, keyword).replace("+", "X"); // remove + signs TEMP FIX TODO
+					// remove + signs TEMP FIX TODO
+					String encWord = SHA256.createIndexingString(kE, keyword).replace("+", "X");
 					Set<String> inds = HttpUtil.HttpGet(encWord);
 					// Decrypt all inds and add to listSet
 					Set<String> decInds = new HashSet<>();
@@ -49,21 +62,16 @@ public class SearchHandlers {
 					listSet.add(decInds);
 				}
 				
+				modifying = true;
+				matchSlider.setMaximum(keywords.length);
+				matchSlider.setValue(keywords.length);
+				matchSlider.setMinimum(1);
+				modifying = false;
+				
 				// Perform set intersections on results
 				Set<String> results = intersect(listSet);
 				
-				// Add results to gui, and set selected
-				searchResults.clear();
-				if (results.isEmpty()) {
-					searchResults.addElement("No results...");
-					list.setEnabled(false);
-				} else {
-					for (String result : results) {
-						searchResults.addElement(result);
-					}
-					list.setSelectedIndex(0);
-					list.setEnabled(true);
-				}
+				populateResults(results, list, searchResults);
 			}
 		};
 	}
@@ -90,6 +98,20 @@ public class SearchHandlers {
 		};
 	}
 	
+	public static ChangeListener getMatchHandler(JList<String> list, DefaultListModel<String> searchResults) {
+		return new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider) e.getSource();
+				if (!modifying && !source.getValueIsAdjusting()) {
+					int min = source.getValue();
+					Set<String> results = intersect(listSet, min);
+					populateResults(results, list, searchResults);
+				}
+			}
+		};
+	}
+	
 	private static void downloadFromList(JList<String> list) {
 		if (list.getSelectedIndex() >= 0) {
 			JFileChooser fileChooser = new JFileChooser();
@@ -111,9 +133,50 @@ public class SearchHandlers {
 		}
 	}
 	
+	private static void populateResults(Set<String> results, JList<String> list, DefaultListModel<String> searchResults) {
+		// Add results to gui, and set selected
+		searchResults.clear();
+		if (results.isEmpty()) {
+			searchResults.addElement("No results...");
+			list.setEnabled(false);
+		} else {
+			for (String result : results) {
+				searchResults.addElement(result);
+			}
+			list.setSelectedIndex(0);
+			list.setEnabled(true);
+		}
+	}
+	
+	private static Set<String> intersect(List<Set<String>> sets, int min) {
+		if (sets.size() < 1) {
+			return Collections.emptySet();
+		} else if(sets.size() <= min) {
+			return intersect(sets);
+		}
+		
+		// Adds each result to multiset and counts
+		Multiset<String> bag = HashMultiset.create();
+		for (Set<String> set : sets) {
+			for (String str : set) {
+				bag.add(str);
+			}
+		}
+		
+		// Only keep results with a count greater than min
+		Set<String> newSet = new HashSet<>();
+		for (Entry<String> e : bag.entrySet()) {
+			if (e.getCount() >= min) {
+				newSet.add(e.getElement());
+			}
+		}
+		
+		return newSet;
+	}
+	
 	private static Set<String> intersect(List<Set<String>> sets) {
 		if (sets.size() < 1) {
-			return null;
+			return Collections.emptySet();
 		}
 		// Sort sets by size (ascending)
 		Collections.sort(sets, new Comparator<Set<String>>() {
@@ -123,7 +186,7 @@ public class SearchHandlers {
 			}
 		});
 		
-		Set<String> newSet = sets.get(0);
+		Set<String> newSet = new HashSet<>(sets.get(0));
 		for (Set<String> set : sets) {
 			if (newSet.size() < 1) break;
 			if (set == newSet) continue;
