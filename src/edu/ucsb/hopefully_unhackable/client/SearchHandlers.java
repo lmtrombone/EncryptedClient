@@ -5,15 +5,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
@@ -23,18 +22,18 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
-import edu.ucsb.hopefully_unhackable.crypto.SHA256;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
-import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
 
 public class SearchHandlers {
 	private static List<Set<String>> listSet = new ArrayList<>();
-	private static boolean modifying = true;
+	private static LoadingCache<String, Set<String>> cache = CacheBuilder.newBuilder().build(new QueryCacheLoader());
 	
 	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, 
 			DefaultListModel<String> searchResults, JSlider matchSlider) {
@@ -50,28 +49,24 @@ public class SearchHandlers {
 				listSet.clear();
 				for (String keyword : keywords) {
 					if (keyword.isEmpty()) continue;
-					SecretKey kE = SHA256.createIndexingKey(AESCTR.secretKey, keyword);
-					// remove + signs TEMP FIX TODO
-					String encWord = SHA256.createIndexingString(kE, keyword).replace("+", "X");
-					Set<String> inds = HttpUtil.HttpGet(encWord);
-					// Decrypt all inds and add to listSet
-					Set<String> decInds = new HashSet<>();
-					for (String ind : inds) {
-						decInds.add(AESCTR.decrypt(ind, kE));
+					
+					try {
+						listSet.add(cache.get(keyword));
+					} catch (ExecutionException ex) {
+						// Some error? Do nothing for now
+						ex.printStackTrace();
 					}
-					listSet.add(decInds);
 				}
 				
-				modifying = true;
+				// This triggers event on slider once
+				matchSlider.setValueIsAdjusting(true);
 				matchSlider.setMaximum(keywords.length);
 				matchSlider.setValue(keywords.length);
 				matchSlider.setMinimum(1);
-				modifying = false;
-				
-				// Perform set intersections on results
-				Set<String> results = intersect(listSet);
-				
-				populateResults(results, list, searchResults);
+				matchSlider.setValueIsAdjusting(false);
+				// Perform set intersections on results (Done by above code due to event handler)
+				/*Set<String> results = intersect(listSet);
+				populateResults(results, list, searchResults);*/
 			}
 		};
 	}
@@ -103,7 +98,7 @@ public class SearchHandlers {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
-				if (!modifying && !source.getValueIsAdjusting()) {
+				if (!source.getValueIsAdjusting()) {
 					int min = source.getValue();
 					Set<String> results = intersect(listSet, min);
 					populateResults(results, list, searchResults);
