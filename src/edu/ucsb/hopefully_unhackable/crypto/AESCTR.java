@@ -120,7 +120,7 @@ public class AESCTR {
     	String decName = decrypt(encrypted.getFileName(), secretKey);
     	String decId = decrypt(encrypted.getFileId(), secretKey);
     	
-    	return new StringPair(decName, decId);
+    	return new StringPair(decId, decName);
     	
     }
     

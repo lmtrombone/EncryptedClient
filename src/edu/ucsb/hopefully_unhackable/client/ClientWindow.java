@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
+import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JSlider;
 
@@ -43,8 +44,8 @@ public class ClientWindow {
 	private JPanel searchPanel;
 	private JTextField queryField;
 	private JButton btnSearch;
-	private JList<String> list;
-	private DefaultListModel<String> searchResults;
+	private JList<StringPair> list;
+	private DefaultListModel<StringPair> searchResults;
 	private JButton btnDownload;
 
 	// Settings Tab

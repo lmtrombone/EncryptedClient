@@ -40,8 +40,8 @@ public class SearchHandlers {
 	
 	private static List<Set<StringPair>> listSet = new ArrayList<>();
 	
-	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, 
-			DefaultListModel<String> searchResults, JSlider matchSlider) {
+	public static ActionListener getSearchHandler(JTextField queryField, JList<StringPair> list, 
+			DefaultListModel<StringPair> searchResults, JSlider matchSlider) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (AESCTR.secretKey == null) {
@@ -80,7 +80,7 @@ public class SearchHandlers {
 	public static MouseAdapter getListClickHandler() {
 		return new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				JList<String> list = (JList<String>) e.getSource();
+				JList<StringPair> list = (JList<StringPair>) e.getSource();
 		        if (e.getClickCount() == 2) {
 		        	if (list.getSelectedIndex() != -1) {
 		        		downloadFromList(list);		        		
@@ -90,7 +90,7 @@ public class SearchHandlers {
 		};
 	}
 	
-	public static ActionListener getDownloadHandler(JList<String> list) {
+	public static ActionListener getDownloadHandler(JList<StringPair> list) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				downloadFromList(list);
@@ -98,7 +98,7 @@ public class SearchHandlers {
 		};
 	}
 	
-	public static ChangeListener getMatchHandler(JList<String> list, DefaultListModel<String> searchResults) {
+	public static ChangeListener getMatchHandler(JList<StringPair> list, DefaultListModel<StringPair> searchResults) {
 		return new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -112,7 +112,7 @@ public class SearchHandlers {
 		};
 	}
 	
-	private static void downloadFromList(JList<String> list) {
+	private static void downloadFromList(JList<StringPair> list) {
 		if (list.getSelectedIndex() >= 0) {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setApproveButtonText("Save");
@@ -122,7 +122,7 @@ public class SearchHandlers {
 	        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
 	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
-				FileUtils.downloadFile(path, list.getSelectedValue(), AESCTR.secretKey);
+				FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
 				ClientWindow.writeLog("Downloaded to " + path);
 				JOptionPane.showMessageDialog(null, "Downloaded to " + path);
 	        }
@@ -133,15 +133,15 @@ public class SearchHandlers {
 		}
 	}
 	
-	private static void populateResults(Set<StringPair> results, JList<String> list, DefaultListModel<String> searchResults) {
+	private static void populateResults(Set<StringPair> results, JList<StringPair> list, DefaultListModel<StringPair> searchResults) {
 		// Add results to gui, and set selected
 		searchResults.clear();
 		if (results.isEmpty()) {
-			searchResults.addElement("No results...");
+			searchResults.addElement(new StringPair("", "No results..."));
 			list.setEnabled(false);
 		} else {
 			for (StringPair result : results) {
-				searchResults.addElement(result.getFileName());
+				searchResults.addElement(result);
 			}
 			list.setSelectedIndex(0);
 			list.setEnabled(true);

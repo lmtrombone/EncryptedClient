@@ -36,7 +36,7 @@ public class SSE {
 				//tSet.put(fileWords[i], new ArrayList<String>());
 			//}
 			//tSet.get(fileWords[i]).add(encryptedIndex);
-			tSet.put(encWord, new StringPair(encName, encId));
+			tSet.put(encWord, new StringPair(encId, encName));
 		}
 		
 		//for (Entry<String, ArrayList<String>> entry : tSet.entrySet()) {
