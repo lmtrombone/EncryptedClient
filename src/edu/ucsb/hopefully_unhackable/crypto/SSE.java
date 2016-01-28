@@ -11,30 +11,32 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 
 import edu.ucsb.hopefully_unhackable.client.SearchHandlers;
+import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class SSE {
-	public static HashMap<String, String> tSet;
+	public static HashMap<String, StringPair> tSet;
 	//public static HashMap<String, ArrayList<String>> tSet;
 	
-	public static HashMap<String, String> EDBSetup(File selectedFile, SecretKey kS, String key) {
+	public static HashMap<String, StringPair> EDBSetup(File selectedFile, SecretKey kS, String key) {
 		//TODO: Parse documents with indexing
-		
+		String filename = com.google.common.io.Files.getNameWithoutExtension(selectedFile.getName());
 		Set<String> fileWords = readFile(selectedFile);
 		//tSet = new HashMap<String, ArrayList<String>>();
-		tSet = new HashMap<String, String>();
+		tSet = new HashMap<String, StringPair>();
 		for (String word : fileWords) {
 			SearchHandlers.cache.invalidate(word);
 			SecretKey kE = SHA256.createIndexingKey(kS, word);
 			
 			String encWord = SHA256.createIndexingString(kE, word).replace("+", "X"); // remove + signs TEMP FIX TODO
-			String encryptedIndex = AESCTR.encrypt(key, kE);
+			String encId = AESCTR.encrypt(key, kE);
+			String encName = AESCTR.encrypt(filename, kE);
 			//tSet.put(encryptedFileWords[i], encryptedIndex);
 			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
 			//if(tSet.get(fileWords[i]) == null){
 				//tSet.put(fileWords[i], new ArrayList<String>());
 			//}
 			//tSet.get(fileWords[i]).add(encryptedIndex);
-			tSet.put(encWord, encryptedIndex);
+			tSet.put(encWord, new StringPair(encName, encId));
 		}
 		
 		//for (Entry<String, ArrayList<String>> entry : tSet.entrySet()) {

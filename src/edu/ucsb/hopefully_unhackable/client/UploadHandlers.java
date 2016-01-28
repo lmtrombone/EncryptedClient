@@ -17,6 +17,7 @@ import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.crypto.SSE;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
+import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class UploadHandlers {
 	public static ActionListener getBrowseHandler(JTextField filePath) {
@@ -63,7 +64,7 @@ public class UploadHandlers {
 				ClientWindow.writeLog("Encrypting file...");
 				//for now uses same key to encrypt keywords
 				String key = UUID.randomUUID().toString();
-				Map<String, String> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key);
+				Map<String, StringPair> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key);
                 ObjectMapper mapper = new ObjectMapper();
                 try {
 					String json = mapper.writeValueAsString(map);
