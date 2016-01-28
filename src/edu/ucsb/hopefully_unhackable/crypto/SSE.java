@@ -10,6 +10,8 @@ import java.util.Set;
 
 import javax.crypto.SecretKey;
 
+import edu.ucsb.hopefully_unhackable.client.SearchHandlers;
+
 public class SSE {
 	public static HashMap<String, String> tSet;
 	//public static HashMap<String, ArrayList<String>> tSet;
@@ -21,6 +23,7 @@ public class SSE {
 		//tSet = new HashMap<String, ArrayList<String>>();
 		tSet = new HashMap<String, String>();
 		for (String word : fileWords) {
+			SearchHandlers.cache.invalidate(word);
 			SecretKey kE = SHA256.createIndexingKey(kS, word);
 			
 			String encWord = SHA256.createIndexingString(kE, word).replace("+", "X"); // remove + signs TEMP FIX TODO

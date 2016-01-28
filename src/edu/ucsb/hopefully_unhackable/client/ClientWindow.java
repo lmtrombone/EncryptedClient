@@ -53,6 +53,7 @@ public class ClientWindow {
 	private JButton btnKeygen;
 	private JButton btnRemove;
 	private JSlider matchSlider;
+	private JLabel lblMinimumMatches;
 
 	/**
 	 * Launch the application.
@@ -125,12 +126,12 @@ public class ClientWindow {
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
 		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath));
-
+		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
+		list.addMouseListener(SearchHandlers.getListClickHandler());
+		
 		// Add Handlers (Search)
 		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider));
-		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
 		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
-		list.addMouseListener(SearchHandlers.getListClickHandler());
 
 		// Add Handlers (Settings)
 		keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
@@ -183,7 +184,7 @@ public class ClientWindow {
 
 		searchPanel = new JPanel();
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
-		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][][grow]"));
+		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][][][grow]"));
 
 		queryField = new HintTextField("Enter keywords here...");
 
@@ -196,20 +197,23 @@ public class ClientWindow {
 		list = new JList<>();
 		searchResults = new DefaultListModel<>();
 		list.setModel(searchResults);
-		searchPanel.add(list, "cell 0 1 1 3,grow");
+		searchPanel.add(list, "cell 0 1 1 4,grow");
 
 		btnDownload = new JButton("Download");
 		searchPanel.add(btnDownload, "cell 1 1");
 		
+		lblMinimumMatches = new JLabel("Minimum Matches:");
+		searchPanel.add(lblMinimumMatches, "cell 1 2");
+		
 		matchSlider = new JSlider();
+		matchSlider.setPaintLabels(true);
 		matchSlider.setMinimum(1);
-		matchSlider.setPaintTicks(true);
 		matchSlider.setSnapToTicks(true);
 		matchSlider.setValue(1);
 		matchSlider.setMinorTickSpacing(1);
 		matchSlider.setMajorTickSpacing(1);
 		matchSlider.setMaximum(1);
-		searchPanel.add(matchSlider, "cell 1 2");
+		searchPanel.add(matchSlider, "cell 1 3");
 
 		settingPanel = new JPanel();
 		tabbedPane.addTab("Settings", null, settingPanel, "Settings");

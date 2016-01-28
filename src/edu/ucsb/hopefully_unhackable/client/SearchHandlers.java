@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -32,8 +33,10 @@ import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
 
 public class SearchHandlers {
+	public static LoadingCache<String, Set<String>> cache = CacheBuilder.newBuilder().maximumSize(100)
+			.expireAfterAccess(5, TimeUnit.MINUTES).build(new QueryCacheLoader());
+	
 	private static List<Set<String>> listSet = new ArrayList<>();
-	private static LoadingCache<String, Set<String>> cache = CacheBuilder.newBuilder().build(new QueryCacheLoader());
 	
 	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, 
 			DefaultListModel<String> searchResults, JSlider matchSlider) {
