@@ -57,7 +57,9 @@ public class SSE {
 	
 	//reads file and returns unique words in a set
 	public static Set<String> readFile(File selectedFile) {
+		String filename = com.google.common.io.Files.getNameWithoutExtension(selectedFile.getName());
 		Set<String> keywords = new HashSet<>();
+		keywords.add(filename);
 		try {
 			List<String> lines = Files.readAllLines(Paths.get(selectedFile.toURI()));
 			for (String line : lines) {
