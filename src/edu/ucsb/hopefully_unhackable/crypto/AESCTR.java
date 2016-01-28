@@ -18,6 +18,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
+import edu.ucsb.hopefully_unhackable.utils.StringPair;
+
 public class AESCTR {
 	
 	public static final int AES_KEY_LENGTH = 256;
@@ -112,6 +114,14 @@ public class AESCTR {
         }
         
         return plainText;
+    }
+    
+    public static StringPair decrypt(final StringPair encrypted, SecretKey secretKey){
+    	String decName = decrypt(encrypted.getFileName(), secretKey);
+    	String decId = decrypt(encrypted.getFileId(), secretKey);
+    	
+    	return new StringPair(decName, decId);
+    	
     }
     
     public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey, byte[] nonce) {

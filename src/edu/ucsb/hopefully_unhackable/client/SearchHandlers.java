@@ -26,17 +26,19 @@ import javax.swing.event.ChangeListener;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
+import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class SearchHandlers {
-	public static LoadingCache<String, Set<String>> cache = CacheBuilder.newBuilder().maximumSize(100)
+	public static LoadingCache<String, Set<StringPair>> cache = CacheBuilder.newBuilder().maximumSize(100)
 			.expireAfterAccess(5, TimeUnit.MINUTES).build(new QueryCacheLoader());
 	
-	private static List<Set<String>> listSet = new ArrayList<>();
+	private static List<Set<StringPair>> listSet = new ArrayList<>();
 	
 	public static ActionListener getSearchHandler(JTextField queryField, JList<String> list, 
 			DefaultListModel<String> searchResults, JSlider matchSlider) {
@@ -68,7 +70,7 @@ public class SearchHandlers {
 				matchSlider.setMinimum(1);
 				matchSlider.setValueIsAdjusting(false);
 				// Perform set intersections on results (Done by above code due to event handler)
-				/*Set<String> results = intersect(listSet);
+				/*Set<StringPair> results = intersect(listSet);
 				populateResults(results, list, searchResults);*/
 			}
 		};
@@ -103,7 +105,7 @@ public class SearchHandlers {
 				JSlider source = (JSlider) e.getSource();
 				if (!source.getValueIsAdjusting()) {
 					int min = source.getValue();
-					Set<String> results = intersect(listSet, min);
+					Set<StringPair> results = intersect(listSet, min);
 					populateResults(results, list, searchResults);
 				}
 			}
@@ -131,22 +133,22 @@ public class SearchHandlers {
 		}
 	}
 	
-	private static void populateResults(Set<String> results, JList<String> list, DefaultListModel<String> searchResults) {
+	private static void populateResults(Set<StringPair> results, JList<String> list, DefaultListModel<String> searchResults) {
 		// Add results to gui, and set selected
 		searchResults.clear();
 		if (results.isEmpty()) {
 			searchResults.addElement("No results...");
 			list.setEnabled(false);
 		} else {
-			for (String result : results) {
-				searchResults.addElement(result);
+			for (StringPair result : results) {
+				searchResults.addElement(result.getFileName());
 			}
 			list.setSelectedIndex(0);
 			list.setEnabled(true);
 		}
 	}
 	
-	private static Set<String> intersect(List<Set<String>> sets, int min) {
+	private static Set<StringPair> intersect(List<Set<StringPair>> sets, int min) {
 		if (sets.size() < 1) {
 			return Collections.emptySet();
 		} else if(sets.size() <= min) {
@@ -154,16 +156,16 @@ public class SearchHandlers {
 		}
 		
 		// Adds each result to multiset and counts
-		Multiset<String> bag = HashMultiset.create();
-		for (Set<String> set : sets) {
-			for (String str : set) {
+		Multiset<StringPair> bag = HashMultiset.create();
+		for (Set<StringPair> set : sets) {
+			for (StringPair str : set) {
 				bag.add(str);
 			}
 		}
 		
 		// Only keep results with a count greater than min
-		Set<String> newSet = new HashSet<>();
-		for (Entry<String> e : bag.entrySet()) {
+		Set<StringPair> newSet = new HashSet<>();
+		for (Entry<StringPair> e : bag.entrySet()) {
 			if (e.getCount() >= min) {
 				newSet.add(e.getElement());
 			}
@@ -172,24 +174,24 @@ public class SearchHandlers {
 		return newSet;
 	}
 	
-	private static Set<String> intersect(List<Set<String>> sets) {
+	private static Set<StringPair> intersect(List<Set<StringPair>> sets) {
 		if (sets.size() < 1) {
 			return Collections.emptySet();
 		}
 		// Sort sets by size (ascending)
-		Collections.sort(sets, new Comparator<Set<String>>() {
+		Collections.sort(sets, new Comparator<Set<StringPair>>() {
 			@Override
-			public int compare(Set<String> o1, Set<String> o2) {
+			public int compare(Set<StringPair> o1, Set<StringPair> o2) {
 				return Integer.compare(o1.size(), o2.size());
 			}
 		});
 		
-		Set<String> newSet = new HashSet<>(sets.get(0));
-		for (Set<String> set : sets) {
+		Set<StringPair> newSet = new HashSet<>(sets.get(0));
+		for (Set<StringPair> set : sets) {
 			if (newSet.size() < 1) break;
 			if (set == newSet) continue;
 			
-			Iterator<String> it = newSet.iterator();
+			Iterator<StringPair> it = newSet.iterator();
 			while (it.hasNext()) {
 				if (!set.contains(it.next())) {
 					it.remove();

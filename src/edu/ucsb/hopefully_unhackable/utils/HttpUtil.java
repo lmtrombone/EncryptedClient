@@ -79,8 +79,8 @@ public class HttpUtil{
 	*/
 	
 	//HTTP GET request
-	public static Set<String> HttpGet(String keyWord) {	
-		Set<String> set = null;
+	public static Set<StringPair> HttpGet(String keyWord) {	
+		Set<StringPair> set = null;
 		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
 		//String url = "http://128.111.43.52:8080/searchfile?query=" + keyWord;
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
@@ -93,7 +93,7 @@ public class HttpUtil{
 		 			
 		 	String jsonString = EntityUtils.toString(response.getEntity());
 		 	ObjectMapper mapper = new ObjectMapper();
-		 	set = mapper.readValue(jsonString, new TypeReference<Set<String>>(){});
+		 	set = mapper.readValue(jsonString, new TypeReference<Set<StringPair>>(){});
 		} catch(IOException e) {
 			e.printStackTrace();
 		}

@@ -80,6 +80,7 @@ public class ClientWindow {
 
 		// Load all keys
 		File folder = new File("keys");
+		folder.mkdirs();
 		File[] files = folder.listFiles();
 		boolean hasDefaultKey = false;
 		for (File file : files) {
@@ -107,7 +108,6 @@ public class ClientWindow {
 			SecretKey newKey = AESCTR.generateKey();
 			// Serialize (out)
 			try {
-				new File("keys").mkdirs();
 				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.getAbsolutePath()));
 				out.writeObject(newKey);
 				out.close();
