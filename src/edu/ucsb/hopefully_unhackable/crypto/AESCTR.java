@@ -39,7 +39,7 @@ public class AESCTR {
 		}
 	}
     
-    private static int generateRandomNonce(final byte[] nonceBuffer,
+    public static int generateRandomNonce(final byte[] nonceBuffer,
             final int offset, final int size) {
         final SecureRandom rng = new SecureRandom();
         final byte[] nonce = new byte[size];

@@ -41,6 +41,7 @@ public class FileUtils
             byte[] buffer = new byte[BUFFER_SIZE];
             byte[] nonceBuffer = new byte[AESCTR.NONCE_SIZE];
             int bytesRead;
+            AESCTR.generateRandomNonce(nonceBuffer, 0, AESCTR.NONCE_SIZE);
             while ((bytesRead = reader.read(buffer)) > -1) {
                 byte[] trunBuffer = null;
                 byte[] encBuffer;
@@ -51,6 +52,7 @@ public class FileUtils
                     trunBuffer = buffer;
                 }
                 encBuffer = AESCTR.encryptbytes(trunBuffer, secretKey, nonceBuffer);
+                System.out.println(Arrays.toString(encBuffer));
                 out.write(encBuffer, 0, encBuffer.length);
             }
             out.flush();
