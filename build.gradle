@@ -1,6 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'application'
+
+sourceSets.main.java.srcDirs = ['src']
+mainClassName = 'edu.ucsb.hopefully_unhackable.client.ClientWindow'
 
 jar {
     baseName = 'encryptedclient'
