@@ -1,7 +1,6 @@
 package edu.ucsb.hopefully_unhackable.utils;
 
-
-public class DataBlock {
+public class DataBlock implements Comparable<DataBlock> {
     
     private byte[] data;
     private int offset;
@@ -26,5 +25,19 @@ public class DataBlock {
     public void setOffset(int offset) {
         this.offset = offset;
     }
+
+	@Override
+	public int compareTo(DataBlock dataBlock) {
+		return Integer.compare(offset, dataBlock.offset);
+	}
     
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Offset: " + offset + ", Data: ");
+	    for (byte b: data) {
+	       sb.append(String.format("%02X ", b & 0xFF));
+	    }
+	    return sb.toString();
+	}
 }

@@ -10,10 +10,10 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
 
@@ -34,13 +34,6 @@ public class FileUtils
     private static final String BUCKET = "ucsb-temp-bucket-name";
     private static final int BUFFER_SIZE = 10;
     private static final int THREAD_COUNT = 10;
-    public static Comparator<DataBlock> comp = new Comparator<DataBlock>() {
-		@Override
-		public int compare(DataBlock o1, DataBlock o2) {
-			return Integer.compare(o1.getOffset(), o2.getOffset());
-		}
-    	
-    };
 
     public static void uploadFile(File file, String id, SecretKey secretKey) {
         AmazonS3 s3 = getClient();
@@ -48,116 +41,56 @@ public class FileUtils
         // Encrypted method
         PipedInputStream in = new PipedInputStream();
         try {
+        	PriorityBlockingQueue<DataBlock> inQueue = new PriorityBlockingQueue<DataBlock>(128);
+        	PriorityBlockingQueue<DataBlock> outQueue = new PriorityBlockingQueue<DataBlock>(128);
             OutputStream out = new PipedOutputStream(in);
             InputStream reader = new BufferedInputStream(new FileInputStream(file));
             byte[] buffer = new byte[BUFFER_SIZE];
             byte[] nonceBuffer = new byte[AESCTR.NONCE_SIZE];
             int bytesRead;
             int offset = 0;
-            int count = 0;
+            
             AESCTR.generateRandomNonce(nonceBuffer, 0, AESCTR.NONCE_SIZE);
-            PriorityBlockingQueue<DataBlock> queue = new PriorityBlockingQueue<DataBlock>(128,
-            		comp);
+            System.out.println("====Encryption Begin====");
             while ((bytesRead = reader.read(buffer)) > -1) {
-                byte[] trunBuffer = null;
-                byte[] encBuffer;
-                trunBuffer = Arrays.copyOf(buffer, bytesRead);
-                System.out.println("Before queue:" + Arrays.toString(trunBuffer));
-                queue.put(new DataBlock(trunBuffer, offset));
-                count++;
-                offset+=bytesRead;
+                byte[] trunBuffer = Arrays.copyOf(buffer, bytesRead);
+                System.out.println("Enqueue: " + Arrays.toString(trunBuffer));
+                inQueue.put(new DataBlock(trunBuffer, offset));
+                offset += bytesRead;
             }
-
-            reader.close();
             
-            /*
-            DataBlock block1 = queue.take();
-            byte[] b1 = block1.getData();
-            int o1 = block1.getOffset();
-            System.out.println("Bytes " + o1 + " : " + Arrays.toString(b1));
-            
-            DataBlock block2 = queue.take();
-            byte[] b2 = block2.getData();
-            int o2 = block2.getOffset();
-            System.out.println("Bytes " + o2 + " : " + Arrays.toString(b2));
-            
-            DataBlock block3 = queue.take();
-            byte[] b3 = block3.getData();
-            int o3 = block3.getOffset();
-            System.out.println("Bytes " + o3 + " : " + Arrays.toString(b3));
-            
-            DataBlock block4 = queue.take();
-            byte[] b4 = block4.getData();
-            int o4 = block4.getOffset();
-            System.out.println("Bytes " + o4 + " : " + Arrays.toString(b4));
-            */         
+            reader.close();    
             
             ExecutorService service = Executors.newFixedThreadPool(THREAD_COUNT);
-            EncryptionThread encryption = new EncryptionThread(count, secretKey,
-            		nonceBuffer, out);
-            EncryptionThread.blockingQueue = queue;
             
-            /*
-            DataBlock block1 = EncryptionThread.blockingQueue.take();
-            byte[] b1 = block1.getData();
-            int o1 = block1.getOffset();
-            System.out.println("Bytes " + o1 + " : " + Arrays.toString(b1));
-            
-            DataBlock block2 = EncryptionThread.blockingQueue.take();
-            byte[] b2 = block2.getData();
-            int o2 = block2.getOffset();
-            System.out.println("Bytes " + o2 + " : " + Arrays.toString(b2));
-            
-            DataBlock block3 = EncryptionThread.blockingQueue.take();
-            byte[] b3 = block3.getData();
-            int o3 = block3.getOffset();
-            System.out.println("Bytes " + o3 + " : " + Arrays.toString(b3));
-            
-            DataBlock block4 = EncryptionThread.blockingQueue.take();
-            byte[] b4 = block4.getData();
-            int o4 = block4.getOffset();
-            System.out.println("Bytes " + o4 + " : " + Arrays.toString(b4));
-            */         
-            
-            for(int i = 0; i < (THREAD_COUNT - 1); i++) {
+            //TODO Why is it -1
+            for (int i = 0; i < (THREAD_COUNT - 1); i++) {
+            	EncryptionThread encryption = new EncryptionThread(secretKey, nonceBuffer, inQueue, outQueue);
             	service.submit(encryption);
             }
             
-            service.shutdownNow();
+            service.shutdown();
+            try {
+            	service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            	System.out.println("====Encryption Done====");
+        	} catch (InterruptedException e) {
+        	    e.printStackTrace();
+        	}
             
-            /*
-            DataBlock block1 = EncryptionThread.encQueue.take();
-            byte[] b1 = block1.getData();
-            int o1 = block1.getOffset();
-            System.out.println("Bytes " + o1 + " : " + Arrays.toString(b1));
-            
-            DataBlock block2 = EncryptionThread.encQueue.take();
-            byte[] b2 = block2.getData();
-            int o2 = block2.getOffset();
-            System.out.println("Bytes " + o2 + " : " + Arrays.toString(b2));
-            
-            DataBlock block3 = EncryptionThread.encQueue.take();
-            byte[] b3 = block3.getData();
-            int o3 = block3.getOffset();
-            System.out.println("Bytes " + o3 + " : " + Arrays.toString(b3));
-            
-            DataBlock block4 = EncryptionThread.encQueue.take();
-            byte[] b4 = block4.getData();
-            int o4 = block4.getOffset();
-            System.out.println("Bytes " + o4 + " : " + Arrays.toString(b4));
-            */         
-            
-            
-            while(EncryptionThread.encQueue.size() > 0) {
-            	DataBlock block = EncryptionThread.encQueue.take();
+            System.out.println("====Upload Begin====");
+            while (!outQueue.isEmpty()) {
+            	DataBlock block = outQueue.take();
             	byte[] encBuffer = block.getData();
-            	System.out.println("Get " + block.getOffset() + " : " + Arrays.toString(encBuffer));
+            	System.out.println("Dequeue: " + block);
             	out.write(encBuffer, 0, encBuffer.length);
             }
             
+            out.flush();
+            out.close();
             
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(in.available());
+            System.out.println("====Upload Complete (" + in.available() + " bytes)====");
             s3.putObject(BUCKET, id, in, metadata);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -177,54 +110,55 @@ public class FileUtils
         //Decrypted method
         InputStream in = s3.getObject(objReq).getObjectContent();
         try {
+        	PriorityBlockingQueue<DataBlock> inQueue = new PriorityBlockingQueue<DataBlock>(128);
+        	PriorityBlockingQueue<DataBlock> outQueue = new PriorityBlockingQueue<DataBlock>(128);
             OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
             int encBufferSize = AESCTR.NONCE_SIZE + BUFFER_SIZE;
             int bytesRead;
             int offset = 0;
-            int count = 0;
             byte[] buffer = new byte[encBufferSize];
-            PriorityBlockingQueue<DataBlock> queue = new PriorityBlockingQueue<DataBlock>(128,
-            		comp);
+            
+            System.out.println("====Decryption Begin====");
             while ((bytesRead = in.read(buffer)) > -1) {
-                byte[] trunBuffer = null;
-                byte[] decBuffer;
-                trunBuffer = Arrays.copyOf(buffer, bytesRead);
-                System.out.println("Enc array: " + Arrays.toString(trunBuffer));
-                System.out.println("offset: " + offset);
-                queue.put(new DataBlock(trunBuffer, offset));
-            	offset+=bytesRead;
-            	count++;
+                byte[] trunBuffer = Arrays.copyOf(buffer, bytesRead);
+                System.out.println("Enqueue: " + Arrays.toString(trunBuffer));
+                inQueue.put(new DataBlock(trunBuffer, offset));
+            	offset += bytesRead;
             }
 
-            
             in.close();
             
             ExecutorService service = Executors.newFixedThreadPool(THREAD_COUNT);
-            DecryptionThread decryption = new DecryptionThread(count, secretKey, out);
-            DecryptionThread.blockingQueue = queue;
             
-            for(int i = 0; i < (THREAD_COUNT - 1); i++){
+            for(int i = 0; i < (THREAD_COUNT - 1); i++) {
+            	DecryptionThread decryption = new DecryptionThread(secretKey, null, inQueue, outQueue);
             	service.submit(decryption);
             }
             
-            service.shutdownNow();
+            service.shutdown();
+            try {
+            	service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            	System.out.println("====Decryption Done====");
+        	} catch (InterruptedException e) {
+        	    e.printStackTrace();
+        	}
             
-            while(DecryptionThread.decQueue.size() > 0){
-            	DataBlock block = DecryptionThread.decQueue.take();
+            System.out.println("====Download Begin====");
+            while (!outQueue.isEmpty()) {
+            	DataBlock block = outQueue.take();
             	byte[] decBuffer = block.getData();
-            	System.out.println("Get " + block.getOffset() + " : " + Arrays.toString(decBuffer));
+            	System.out.println("Dequeue: " + block);
             	out.write(decBuffer, 0, decBuffer.length);
             }
             
             out.flush();
             out.close();
             
-            
+            System.out.println("====Download Complete====");
             
         } catch (IOException ex) {
             ex.printStackTrace();
-        }
-        catch(InterruptedException e){
+        } catch(InterruptedException e) {
         	Thread.currentThread().interrupt();
         }
     }
