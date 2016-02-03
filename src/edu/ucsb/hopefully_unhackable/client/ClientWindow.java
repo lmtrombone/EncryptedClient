@@ -11,12 +11,14 @@ import java.io.ObjectOutputStream;
 import javax.crypto.SecretKey;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -25,7 +27,6 @@ import javax.swing.SwingConstants;
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JSlider;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -55,6 +56,8 @@ public class ClientWindow {
 	private JButton btnRemove;
 	private JSlider matchSlider;
 	private JLabel lblMinimumMatches;
+	private JScrollPane scrollPane1;
+	private JCheckBox ckboxUseStemmer;
 
 	/**
 	 * Launch the application.
@@ -126,19 +129,19 @@ public class ClientWindow {
 
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath));
+		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath, ckboxUseStemmer));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
 		list.addMouseListener(SearchHandlers.getListClickHandler());
-		
-		// Add Handlers (Search)
-		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider));
-		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
 
 		// Add Handlers (Settings)
 		keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
 		btnRemove.addActionListener(SettingsHandlers.removeKeyHandler(keyFile));
 		btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));
-
+		
+		// Add Handlers (Search)
+		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider, ckboxUseStemmer));
+		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
+		
 		searchPanel.getRootPane().setDefaultButton(btnSearch);
 	}
 
@@ -194,11 +197,14 @@ public class ClientWindow {
 
 		btnSearch = new JButton("Search");
 		searchPanel.add(btnSearch, "cell 1 0");
-
-		list = new JList<>();
 		searchResults = new DefaultListModel<>();
+		
+		scrollPane1 = new JScrollPane();
+		searchPanel.add(scrollPane1, "cell 0 1 1 4,grow");
+		
+		list = new JList<>();
+		scrollPane1.setViewportView(list);
 		list.setModel(searchResults);
-		searchPanel.add(list, "cell 0 1 1 4,grow");
 
 		btnDownload = new JButton("Download");
 		searchPanel.add(btnDownload, "cell 1 1");
@@ -228,5 +234,9 @@ public class ClientWindow {
 
 		btnKeygen = new JButton("   New   ");
 		settingPanel.add(btnKeygen, "cell 2 0");
+		
+		ckboxUseStemmer = new JCheckBox("Use Stemmer");
+		ckboxUseStemmer.setSelected(true);
+		settingPanel.add(ckboxUseStemmer, "cell 0 1");
 	}
 }
