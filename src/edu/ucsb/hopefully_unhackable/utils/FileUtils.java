@@ -1,4 +1,5 @@
 package edu.ucsb.hopefully_unhackable.utils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,8 +30,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 
-public class FileUtils
-{
+public class FileUtils {
     private static final String BUCKET = "ucsb-temp-bucket-name";
     private static final int BUFFER_SIZE = 10;
     private static final int THREAD_COUNT = 10;

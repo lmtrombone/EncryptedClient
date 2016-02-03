@@ -1,4 +1,5 @@
 package edu.ucsb.hopefully_unhackable.crypto;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -10,11 +11,11 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SHA2 {
 	
-	//creates an AES key using SHA256
+	//creates an AES key using SHA2-256
 	public static SecretKey createIndexingKey(SecretKey secretKey, String keyWord) {
 		SecretKey indexingKey = null;
 		try {
-			//constructs a key for SHA256
+			//constructs a key for SHA2-256
 			byte[] key = secretKey.getEncoded();
 			SecretKeySpec keySpec = new SecretKeySpec(key, "HmacSHA256");
 			Mac sha256 = Mac.getInstance("HmacSHA256");
@@ -23,7 +24,7 @@ public class SHA2 {
 			//hashes keyWord and stores in result
 			byte[] result = sha256.doFinal(keyWord.getBytes());
 
-			//creates AES key using result of SHA256
+			//creates AES key using result of SHA2-256
 			indexingKey = new SecretKeySpec(result, 0, result.length, "AES");
 		} catch(NoSuchAlgorithmException nosuchAlgo) {
 			System.out.println("The algorithm " + nosuchAlgo + " does not exist.");
@@ -47,7 +48,7 @@ public class SHA2 {
 			//hashes keyWord and stores in result
 			byte[] result = sha256.doFinal(keyWord.getBytes());
 
-			//creates AES key using result of SHA256
+			//creates AES key using result of SHA2-256
 			id = Base64.getEncoder().encodeToString(result);
 		} catch(NoSuchAlgorithmException nosuchAlgo) {
 			System.out.println("The algorithm " + nosuchAlgo + " does not exist.");

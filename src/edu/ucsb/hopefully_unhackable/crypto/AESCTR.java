@@ -1,4 +1,5 @@
 package edu.ucsb.hopefully_unhackable.crypto;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,14 +9,11 @@ import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
@@ -171,63 +169,5 @@ public class AESCTR {
                     "Missing basic functionality from Java runtime", e);
         }
         return plaintext;
-    }
-    
-    
-  //converts File object to bytes
-    public static byte[] serialize(File selectedFile){
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		try {
-			ObjectOutputStream out = new ObjectOutputStream(bout);
-	        out.writeObject(selectedFile);
-	        out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-        return bout.toByteArray();
-    }
-    
-  //convert bytes back to file object
-    public static File deserialize(byte[] bytes){
-    	File deserializedFile = null;
-        ByteArrayInputStream bout = new ByteArrayInputStream(bytes);     
-		try {
-			ObjectInputStream in = new ObjectInputStream(bout);
-	        deserializedFile = (File) in.readObject();
-	        in.close();
-	        bout.close();
-		}
-		
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		return deserializedFile;
-    }
-
-    public static void main(final String[] args) {
-        final String secret = "owlstead";
-        final String secret1 = "owlstead";
-        
-        SecretKey secretKey = generateKey();
-        
-        String cipherText = encrypt(secret, secretKey);
-        System.out.println("Ciphertext: " + cipherText);
-        
-        String plainText = decrypt(cipherText, secretKey);
-        System.out.println("Plaintext: " + plainText);
-        
-        System.out.println("Plaintext: " + Arrays.toString(secret.getBytes()));
-        
-        //byte[] byteCipherText = encryptbytes(secret.getBytes(), secretKey);
-        //System.out.println("Ciphertext: " + Arrays.toString(byteCipherText));
-        
-        //byte[] bytePlainText = decryptbytes(byteCipherText, secretKey);
-        //System.out.println("Plaintext: " + Arrays.toString(bytePlainText));
     }
 }
