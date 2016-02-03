@@ -8,7 +8,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-public class SHA256 {
+public class SHA2 {
 	
 	//creates an AES key using SHA256
 	public static SecretKey createIndexingKey(SecretKey secretKey, String keyWord) {

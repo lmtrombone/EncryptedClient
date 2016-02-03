@@ -25,9 +25,9 @@ public class SSE {
 		tSet = new HashMap<String, StringPair>();
 		for (String word : fileWords) {
 			SearchHandlers.cache.invalidate(word);
-			SecretKey kE = SHA256.createIndexingKey(kS, word);
+			SecretKey kE = SHA3.createIndexingKey(kS, word);
 			
-			String encWord = SHA256.createIndexingString(kE, word).replace("+", "X"); // remove + signs TEMP FIX TODO
+			String encWord = SHA2.createIndexingString(kE, word).replace("+", "X"); // remove + signs TEMP FIX TODO
 			String encId = AESCTR.encrypt(key, kE);
 			String encName = AESCTR.encrypt(filename, kE);
 			//tSet.put(encryptedFileWords[i], encryptedIndex);
