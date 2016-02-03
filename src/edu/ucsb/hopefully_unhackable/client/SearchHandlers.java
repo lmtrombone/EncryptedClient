@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -26,12 +27,13 @@ import javax.swing.event.ChangeListener;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.FileUtils;
+import edu.ucsb.hopefully_unhackable.utils.Stemmer;
+import edu.ucsb.hopefully_unhackable.utils.Stopper;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class SearchHandlers {
@@ -41,7 +43,7 @@ public class SearchHandlers {
 	private static List<Set<StringPair>> listSet = new ArrayList<>();
 	
 	public static ActionListener getSearchHandler(JTextField queryField, JList<StringPair> list, 
-			DefaultListModel<StringPair> searchResults, JSlider matchSlider) {
+			DefaultListModel<StringPair> searchResults, JSlider matchSlider, JCheckBox stem) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (AESCTR.secretKey == null) {
@@ -51,8 +53,18 @@ public class SearchHandlers {
 				
 				// Split query into keywords
 				String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
+				Set<String> stemWords = new HashSet<>();
+				for (String word : keywords) {
+					if (Stopper.isStop(word)) continue;
+					if (stem.isSelected()) {
+						stemWords.add(Stemmer.getStem(word));
+					} else {
+						stemWords.add(word);
+					}
+				}
+				System.out.println(" Searching: " + stemWords);
 				listSet.clear();
-				for (String keyword : keywords) {
+				for (String keyword : stemWords) {
 					if (keyword.isEmpty()) continue;
 					
 					try {
@@ -65,8 +77,8 @@ public class SearchHandlers {
 				
 				// This triggers event on slider once
 				matchSlider.setValueIsAdjusting(true);
-				matchSlider.setMaximum(keywords.length);
-				matchSlider.setValue(keywords.length);
+				matchSlider.setMaximum(stemWords.size());
+				matchSlider.setValue(stemWords.size());
 				matchSlider.setMinimum(1);
 				matchSlider.setValueIsAdjusting(false);
 				// Perform set intersections on results (Done by above code due to event handler)

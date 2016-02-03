@@ -11,19 +11,31 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 
 import edu.ucsb.hopefully_unhackable.client.SearchHandlers;
+import edu.ucsb.hopefully_unhackable.utils.Stemmer;
+import edu.ucsb.hopefully_unhackable.utils.Stopper;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class SSE {
 	public static HashMap<String, StringPair> tSet;
 	//public static HashMap<String, ArrayList<String>> tSet;
 	
-	public static HashMap<String, StringPair> EDBSetup(File selectedFile, SecretKey kS, String key) {
+	public static HashMap<String, StringPair> EDBSetup(File selectedFile, SecretKey kS, String key, boolean stem) {
 		//TODO: Parse documents with indexing
-		String filename = com.google.common.io.Files.getNameWithoutExtension(selectedFile.getName());
+		String filename = selectedFile.getName();
 		Set<String> fileWords = readFile(selectedFile);
+		Set<String> stemWords = new HashSet<>();
+		for (String word : fileWords) {
+			if (Stopper.isStop(word)) continue;
+			if (stem) {
+				stemWords.add(Stemmer.getStem(word));
+			} else {
+				stemWords.add(word);
+			}
+		}
+		//System.out.println(stemWords);
 		//tSet = new HashMap<String, ArrayList<String>>();
 		tSet = new HashMap<String, StringPair>();
-		for (String word : fileWords) {
+		for (String word : stemWords) {
 			SearchHandlers.cache.invalidate(word);
 			SecretKey kE = SHA3.createIndexingKey(kS, word);
 			
