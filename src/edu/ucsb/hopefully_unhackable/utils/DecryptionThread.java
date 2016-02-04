@@ -32,7 +32,7 @@ public class DecryptionThread implements Runnable {
                 
                 System.out.println("Enc: " + block);
                 
-                byte[] decBuffer = AESCTR.decryptbytes(buffer, secretKey);
+                byte[] decBuffer = AESCTR.decryptbytes(buffer, secretKey, nonce);
                 System.out.println("Dec: Offset: " + offset + ", Data: " + Arrays.toString(decBuffer));
                 
                 // TODO Consider using same data block so you dont need to create new

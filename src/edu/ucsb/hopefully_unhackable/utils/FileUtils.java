@@ -78,6 +78,7 @@ public class FileUtils {
         	}
             
             System.out.println("====Upload Begin====");
+            out.write(nonceBuffer);
             while (!outQueue.isEmpty()) {
             	DataBlock block = outQueue.take();
             	byte[] encBuffer = block.getData();
@@ -113,12 +114,17 @@ public class FileUtils {
         	PriorityBlockingQueue<DataBlock> inQueue = new PriorityBlockingQueue<DataBlock>(128);
         	PriorityBlockingQueue<DataBlock> outQueue = new PriorityBlockingQueue<DataBlock>(128);
             OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
-            int encBufferSize = AESCTR.NONCE_SIZE + BUFFER_SIZE;
             int bytesRead;
             int offset = 0;
-            byte[] buffer = new byte[encBufferSize];
+            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] nonceBuffer = new byte[AESCTR.NONCE_SIZE];
             
             System.out.println("====Decryption Begin====");
+            bytesRead = in.read(nonceBuffer);
+            if (bytesRead != AESCTR.NONCE_SIZE){
+            	System.out.println("Invalid Nonce Size: " + bytesRead);
+            }
+            System.out.println("Nonce: " + Arrays.toString(nonceBuffer));
             while ((bytesRead = in.read(buffer)) > -1) {
                 byte[] trunBuffer = Arrays.copyOf(buffer, bytesRead);
                 System.out.println("Enqueue: " + Arrays.toString(trunBuffer));
@@ -131,7 +137,7 @@ public class FileUtils {
             ExecutorService service = Executors.newFixedThreadPool(THREAD_COUNT);
             
             for(int i = 0; i < (THREAD_COUNT - 1); i++) {
-            	DecryptionThread decryption = new DecryptionThread(secretKey, null, inQueue, outQueue);
+            	DecryptionThread decryption = new DecryptionThread(secretKey, nonceBuffer, inQueue, outQueue);
             	service.submit(decryption);
             }
             

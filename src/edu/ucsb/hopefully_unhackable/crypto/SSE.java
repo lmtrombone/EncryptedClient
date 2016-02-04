@@ -33,6 +33,7 @@ public class SSE {
 				stemWords.add(word);
 			}
 		}
+		stemWords.add(com.google.common.io.Files.getNameWithoutExtension(filename));
 		//System.out.println(stemWords);
 		//tSet = new HashMap<String, ArrayList<String>>();
 		tSet = new HashMap<String, StringPair>();
@@ -61,20 +62,12 @@ public class SSE {
 			//}
 		//}
 		
-		//for now not used
-		//AES.generateAESEncryptionKey();
-		//kT = AES.secretKey;	
-		
 		return tSet;
 	}
 	
-	//TODO: Look into Kt
-	
 	//reads file and returns unique words in a set
 	public static Set<String> readFile(File selectedFile) {
-		String filename = com.google.common.io.Files.getNameWithoutExtension(selectedFile.getName());
 		Set<String> keywords = new HashSet<>();
-		keywords.add(filename);
 		try {
 			List<String> lines = Files.readAllLines(Paths.get(selectedFile.toURI()));
 			for (String line : lines) {

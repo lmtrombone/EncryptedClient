@@ -33,7 +33,7 @@ public class EncryptionThread implements Runnable{
                 System.out.println("Unenc: " + block);
                 
                 byte[] encBuffer = AESCTR.encryptbytes(buffer, secretKey, nonce);
-                //
+                
                 System.out.println("Isenc: Offset: " + offset + ", Data: " + Arrays.toString(encBuffer));
                 encQueue.put(new DataBlock(encBuffer, offset));
             }

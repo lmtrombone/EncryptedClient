@@ -1,11 +1,5 @@
 package edu.ucsb.hopefully_unhackable.crypto;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -122,29 +116,22 @@ public class AESCTR {
     	
     }
     
-    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey, byte[] nonce) {
+    public static byte[] encryptbytes(byte[] bytefile, SecretKey secretKey, byte[] nonceBuffer) {
         
     	byte[] byteCipherText = null;
         try {
         	final byte[] plaintext = bytefile;
-            final byte[] nonceAndCiphertext = new byte[NONCE_SIZE
-                    + plaintext.length];
+        	final byte[] nonce = nonceBuffer;
+        	final byte[] ciphertext = new byte[plaintext.length];
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-            int offset = NONCE_SIZE;
-            System.arraycopy(nonce, 0, nonceAndCiphertext, 0, NONCE_SIZE);
-            final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
+            final IvParameterSpec nonceIV = generateIVFromNonce(nonce,
                     0, NONCE_SIZE, cipher.getBlockSize());
             cipher.init(Cipher.ENCRYPT_MODE, secretKey,
                     nonceIV);
-            offset += cipher.doFinal(plaintext, 0, plaintext.length,
-                    nonceAndCiphertext, offset);
-            if (offset != nonceAndCiphertext.length) {
-                throw new IllegalStateException(
-                        "Something wrong during encryption");
-            }
+            cipher.doFinal(plaintext, 0, plaintext.length, ciphertext);
 
-            byteCipherText =  nonceAndCiphertext;
+            byteCipherText =  ciphertext;
         } catch (final GeneralSecurityException e) {
             throw new IllegalStateException(
                     "Missing basic functionality from Java runtime", e);
@@ -152,18 +139,19 @@ public class AESCTR {
         return byteCipherText;
     }
     
-    public static byte[] decryptbytes(byte[] encryptedbytefile, SecretKey secretKey) {
+    public static byte[] decryptbytes(byte[] encryptedbytefile, SecretKey secretKey,
+    		byte[] nonceBuffer) {
         
     	byte[] plaintext = null;
         try {
-        	final byte[] nonceAndCiphertext = encryptedbytefile;
+        	final byte[] nonce = nonceBuffer;
+        	final byte[] ciphertext = encryptedbytefile;
         	Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-            final IvParameterSpec nonceIV = generateIVFromNonce(nonceAndCiphertext,
+            final IvParameterSpec nonceIV = generateIVFromNonce(nonce,
                     0, NONCE_SIZE, cipher.getBlockSize());
             cipher.init(Cipher.DECRYPT_MODE, secretKey,
                     nonceIV);
-            plaintext = cipher.doFinal(nonceAndCiphertext,
-                    NONCE_SIZE, nonceAndCiphertext.length - NONCE_SIZE);
+            plaintext = cipher.doFinal(ciphertext);
         } catch (final GeneralSecurityException e) {
             throw new IllegalStateException(
                     "Missing basic functionality from Java runtime", e);
