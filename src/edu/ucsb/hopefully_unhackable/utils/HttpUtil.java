@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class HttpUtil{
-
+	private static String home = "https://52.34.59.216:8443/";
 	//need to test to make sure it works
 	//HTTP Get request
 	//returns result as HashMap
@@ -81,7 +81,7 @@ public class HttpUtil{
 	//HTTP GET request
 	public static Set<StringPair> HttpGet(String keyWord) {	
 		Set<StringPair> set = null;
-		String url = "http://52.34.59.216:8080/searchfile?query=" + keyWord;
+		String url = home + "searchfile?query=" + keyWord;
 		//String url = "http://128.111.43.52:8080/searchfile?query=" + keyWord;
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			HttpGet getRequest = new HttpGet(url);
@@ -102,11 +102,10 @@ public class HttpUtil{
 	}
 	
 	//HTTP POST request
-	public static void HttpPost(String json){
-		
-		String url = "http://52.34.59.216:8080/indexfile";
+	public static void HttpPost(String json) {
+		String url = home + "indexfile";
 		//String url = "http://128.111.43.52:8080/indexfile";
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			HttpPost post = new HttpPost(url);
 			
 			StringEntity input = new StringEntity(json);
@@ -130,40 +129,29 @@ public class HttpUtil{
 			}
 
 			System.out.println(result.toString());
-			
-
-		}
-		
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			e.printStackTrace();
-		}
-		
-		catch(IOException e){
+		} catch(IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	
-	
 	//function for testing json parser
-	public static void test(){
-		
+	public static void test() {
 		//String jsonString = "{\"example\":\"1\",\"fr\":\"lol\",\"s\":\"up\"}";
 		String jsonString = "{\"status\": \"OK\",\"origin_addresses\": [ \"Vancouver\", \"Seattle\" ],\"destination_addresses\": [ \"San Francisco\", \"Victoria\" ]}";
 		try {
-			
 			JSONObject myjson = new JSONObject(jsonString);
 			Iterator<String> keys = myjson.keys();
-			while(keys.hasNext()){
+			while(keys.hasNext()) {
 				String key = (String) keys.next();
-				if(myjson.get(key) instanceof JSONArray){
+				if(myjson.get(key) instanceof JSONArray) {
 					System.out.println("word: " + key);
 					JSONArray idx = myjson.getJSONArray(key);
-					for(int i = 0; i < idx.length(); i++){
+					for(int i = 0; i < idx.length(); i++) {
 						System.out.println(idx.getString(i));
 					}
-				}
-				else if(myjson instanceof JSONObject){
+				} else if(myjson instanceof JSONObject) {
 					System.out.println("word: " + key);
 					System.out.println(myjson.getString(key));
 				}
@@ -176,8 +164,7 @@ public class HttpUtil{
 
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args) {
 		test();
 	}
-	
 }

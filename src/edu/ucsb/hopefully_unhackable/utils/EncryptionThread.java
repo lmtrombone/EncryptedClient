@@ -1,6 +1,5 @@
 package edu.ucsb.hopefully_unhackable.utils;
 
-import java.util.Arrays;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.crypto.SecretKey;
@@ -30,12 +29,19 @@ public class EncryptionThread implements Runnable{
                 byte[] buffer = block.getData();
                 int offset = block.getOffset();
                 
-                System.out.println("Unenc: " + block);
+                //System.out.println("Unenc: " + block + " " + buffer.length);
                 
-                byte[] encBuffer = AESCTR.encryptbytes(buffer, secretKey, nonce);
+                byte[] encBuffer = AESCTR.encryptbytes(buffer, secretKey, nonce, offset);
+                //System.out.println("Isenc: Offset: " + offset + ", Data: " + Arrays.toString(encBuffer) + " " + encBuffer.length);
                 
-                System.out.println("Isenc: Offset: " + offset + ", Data: " + Arrays.toString(encBuffer));
-                encQueue.put(new DataBlock(encBuffer, offset));
+                if (offset == 0) { //Append Nonce
+                	byte[] firstBuffer = new byte[AESCTR.NONCE_SIZE + encBuffer.length];
+                	System.arraycopy(nonce, 0, firstBuffer, 0, AESCTR.NONCE_SIZE);
+                	System.arraycopy(encBuffer, 0, firstBuffer, AESCTR.NONCE_SIZE, encBuffer.length);
+                	encQueue.put(new DataBlock(firstBuffer, offset));
+                } else { // No Nonce (All other offsets +8 due to nonce)
+                	encQueue.put(new DataBlock(encBuffer, offset + AESCTR.NONCE_SIZE));
+                }
             }
         } catch(InterruptedException e) {
             Thread.currentThread().interrupt();

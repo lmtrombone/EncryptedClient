@@ -1,5 +1,7 @@
 package edu.ucsb.hopefully_unhackable.utils;
 
+import java.util.Arrays;
+
 public class DataBlock implements Comparable<DataBlock> {
     
     private byte[] data;
@@ -35,9 +37,10 @@ public class DataBlock implements Comparable<DataBlock> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Offset: " + offset + ", Data: ");
-	    for (byte b: data) {
+	    /*for (byte b: data) {
 	       sb.append(String.format("%02X ", b & 0xFF));
-	    }
+	    }*/
+		sb.append(Arrays.toString(data));
 	    return sb.toString();
 	}
 }

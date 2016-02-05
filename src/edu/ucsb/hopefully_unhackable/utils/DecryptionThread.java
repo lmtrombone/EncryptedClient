@@ -1,6 +1,5 @@
 package edu.ucsb.hopefully_unhackable.utils;
 
-import java.util.Arrays;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.crypto.SecretKey;
@@ -30,10 +29,10 @@ public class DecryptionThread implements Runnable {
                 byte[] buffer = block.getData();
                 int offset = block.getOffset();
                 
-                System.out.println("Enc: " + block);
+                //System.out.println("Enc: " + block);
                 
-                byte[] decBuffer = AESCTR.decryptbytes(buffer, secretKey, nonce);
-                System.out.println("Dec: Offset: " + offset + ", Data: " + Arrays.toString(decBuffer));
+                byte[] decBuffer = AESCTR.decryptbytes(buffer, secretKey, nonce, offset);
+                //System.out.println("Dec: Offset: " + offset + ", Data: " + Arrays.toString(decBuffer));
                 
                 // TODO Consider using same data block so you dont need to create new
                 decQueue.put(new DataBlock(decBuffer, offset));
