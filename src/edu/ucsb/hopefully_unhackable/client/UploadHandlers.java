@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -44,7 +45,7 @@ public class UploadHandlers {
 		};
 	}
 	
-	public static ActionListener getUploadHandler(JTextField filePath) {
+	public static ActionListener getUploadHandler(JTextField filePath, JCheckBox stem) {
 		return new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -64,7 +65,7 @@ public class UploadHandlers {
 				ClientWindow.writeLog("Encrypting file...");
 				//for now uses same key to encrypt keywords
 				String key = UUID.randomUUID().toString();
-				Map<String, StringPair> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key);
+				Map<String, StringPair> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key, stem.isSelected());
                 ObjectMapper mapper = new ObjectMapper();
                 try {
 					String json = mapper.writeValueAsString(map);

@@ -28,6 +28,7 @@ dependencies {
     compile("commons-logging:commons-logging:1.2")
     compile("com.miglayout:miglayout-swing:5.0")
     compile("com.google.guava:guava:19.0")
+    compile("org.bouncycastle:bcprov-jdk15on:1.54")
 }
 
 
