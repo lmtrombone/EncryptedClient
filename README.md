@@ -21,7 +21,16 @@ Accept the terms when prompted
   ```
   *This path may vary depending on location of java installation*
 
-4. Create AWS credentials files
+4. Added our self-signed SSL certificate to Java
+  Download the certificate for the server, and navigate to folder.
+  ```
+    $ keytool -import -alias grum -file derek -keystore /usr/lib/jvm/java-8-oracle/jre/lib/security/cacerts
+  ```
+  The default password is "changeit"
+  
+  *This path may vary depending on location of java installation*
+
+5. Create AWS credentials files
   ```
     $ mkdir ~/.aws
     $ cat > ~/.aws/credentials
@@ -30,7 +39,7 @@ Accept the terms when prompted
 
     Ctrl + D to finish
 
-5. Run client
+6. Run client
   ```
     ./gradlew run
   ```
