@@ -136,9 +136,42 @@ public class SearchHandlers {
 	        if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
 	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
-				FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
+	        	
+	        	FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
 				ClientWindow.writeLog("Downloaded to " + path);
 				JOptionPane.showMessageDialog(null, "Downloaded to " + path);
+	        	
+	        	/*SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
+						return true;
+					}
+					
+					@Override
+					protected void done() {
+						try {
+							if (get()) {
+								ClientWindow.writeLog("Downloaded to " + path);
+								JOptionPane.showMessageDialog(null, "Downloaded to " + path);
+							} else {
+								ClientWindow.writeLog("Download failed!");
+								JOptionPane.showMessageDialog(null, "Download failed!");
+							}
+						} catch (Exception ex) {
+							JOptionPane.showMessageDialog(null, "Download error!");
+							ex.printStackTrace();
+						}
+						//source.setEnabled(true);
+					}
+					
+					@Override
+					protected void process(List<Integer> n) {
+						//progressBar.setValue(n.get(n.size() - 1));
+					}
+				};
+	        	
+				worker.execute();*/
 	        }
 		} else {
 			// maybe produce an error message

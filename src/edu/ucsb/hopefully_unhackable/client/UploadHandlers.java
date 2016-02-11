@@ -24,6 +24,8 @@ import edu.ucsb.hopefully_unhackable.utils.HttpUtil;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class UploadHandlers {
+	private static String lastUpload = "";
+	
 	public static ActionListener getBrowseHandler(JTextField filePath) {
 		JFileChooser fileChooser = new JFileChooser();
         fileChooser.setApproveButtonText("Select");
@@ -52,8 +54,16 @@ public class UploadHandlers {
 		return new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (filePath.getText() != "") {
-					File fileFromType = new File(filePath.getText());
+				String filename = filePath.getText();
+				if (filename != "") {
+					if (filename.equals(lastUpload)) {
+						if (JOptionPane.showConfirmDialog(null, "You just uploaded " + filename + ", are you sure you want to upload it again?", 
+								"Upload", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+							return;
+						}
+					}
+					
+					File fileFromType = new File(filename);
 					if(fileFromType.isAbsolute() && fileFromType.exists()){
 						ClientWindow.selectedFile = fileFromType;
 					} else {
@@ -98,6 +108,7 @@ public class UploadHandlers {
 							if (get()) {
 								ClientWindow.writeLog("Upload successful!");
 								JOptionPane.showMessageDialog(null, "Upload successful!");
+								lastUpload = filename;
 							} else {
 								ClientWindow.writeLog("Upload failed!");
 								JOptionPane.showMessageDialog(null, "Upload failed!");

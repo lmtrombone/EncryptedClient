@@ -214,7 +214,7 @@ public class ClientWindow {
 		btnDownload = new JButton("Download");
 		searchPanel.add(btnDownload, "cell 1 1");
 		
-		lblMinimumMatches = new JLabel("Minimum Matches:");
+		lblMinimumMatches = new JLabel("Min Words to Match:");
 		searchPanel.add(lblMinimumMatches, "cell 1 2");
 		
 		matchSlider = new JSlider();
