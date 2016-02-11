@@ -16,12 +16,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -51,62 +54,82 @@ public class SearchHandlers {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
+	        	
+				JButton source = (JButton) e.getSource();
+				source.setEnabled(false);
 				
-				// Split query into keywords
-				String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
-				Set<String> stemWords = new HashSet<>();
-				for (String word : keywords) {
-					if (Stopper.isStop(word)) continue;
-					if (stem.isSelected()) {
-						stemWords.add(Stemmer.getStem(word));
-					} else {
-						stemWords.add(word);
+	        	SwingWorker<Set<String>, Void> worker = new SwingWorker<Set<String>, Void>() {
+					@Override
+					protected Set<String> doInBackground() throws Exception {
+						// Split query into keywords
+						String[] keywords = queryField.getText().trim().toLowerCase().split("[^\\w']+");
+						Set<String> stemWords = new HashSet<>();
+						for (String word : keywords) {
+							if (Stopper.isStop(word)) continue;
+							if (stem.isSelected()) {
+								stemWords.add(Stemmer.getStem(word));
+							} else {
+								stemWords.add(word);
+							}
+						}
+						System.out.println(" Searching: " + stemWords);
+						listSet.clear();
+						for (String keyword : stemWords) {
+							if (keyword.isEmpty()) continue;
+							
+							try {
+								listSet.add(cache.get(keyword));
+							} catch (ExecutionException ex) {
+								// Some error? Do nothing for now
+								ex.printStackTrace();
+							}
+						}
+						return stemWords;
 					}
-				}
-				System.out.println(" Searching: " + stemWords);
-				listSet.clear();
-				for (String keyword : stemWords) {
-					if (keyword.isEmpty()) continue;
 					
-					try {
-						listSet.add(cache.get(keyword));
-					} catch (ExecutionException ex) {
-						// Some error? Do nothing for now
-						ex.printStackTrace();
+					@Override
+					protected void done() {
+						try {
+							Set<String> stemWords = get();
+							// This triggers event on slider once
+							matchSlider.setValueIsAdjusting(true);
+							matchSlider.setMaximum(stemWords.size());
+							matchSlider.setValue(stemWords.size());
+							matchSlider.setMinimum(1);
+							matchSlider.setValueIsAdjusting(false);
+							// Perform set intersections on results (Done by above code due to event handler)
+							/*Set<StringPair> results = intersect(listSet);
+							populateResults(results, list, searchResults);*/
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+						source.setEnabled(true);
 					}
-				}
+				};
 				
-				// This triggers event on slider once
-				matchSlider.setValueIsAdjusting(true);
-				matchSlider.setMaximum(stemWords.size());
-				matchSlider.setValue(stemWords.size());
-				matchSlider.setMinimum(1);
-				matchSlider.setValueIsAdjusting(false);
-				// Perform set intersections on results (Done by above code due to event handler)
-				/*Set<StringPair> results = intersect(listSet);
-				populateResults(results, list, searchResults);*/
+				worker.execute();
 			}
 		};
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static MouseAdapter getListClickHandler() {
+	public static MouseAdapter getListClickHandler(JProgressBar progressBar) {
 		return new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				JList<StringPair> list = (JList<StringPair>) e.getSource();
 		        if (e.getClickCount() == 2) {
 		        	if (list.getSelectedIndex() != -1) {
-		        		downloadFromList(list);		        		
+		        		downloadFromList(progressBar, list);		        		
 		        	}
 		        }
 		    }
 		};
 	}
 	
-	public static ActionListener getDownloadHandler(JList<StringPair> list) {
+	public static ActionListener getDownloadHandler(JProgressBar progressBar, JList<StringPair> list) {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				downloadFromList(list);
+				downloadFromList(progressBar, list);
 			}
 		};
 	}
@@ -125,7 +148,7 @@ public class SearchHandlers {
 		};
 	}
 	
-	private static void downloadFromList(JList<StringPair> list) {
+	private static void downloadFromList(JProgressBar progressBar, JList<StringPair> list) {
 		if (list.getSelectedIndex() >= 0) {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setApproveButtonText("Save");
@@ -134,17 +157,22 @@ public class SearchHandlers {
 	        
 	        // file chooser to save file
 	        if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
 	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
 	        	
-	        	FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
-				ClientWindow.writeLog("Downloaded to " + path);
-				JOptionPane.showMessageDialog(null, "Downloaded to " + path);
+	        	progressBar.setValue(0);
+				ClientWindow.writeLog("Downloading file...");
 	        	
-	        	/*SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
+				//TODO: Actually report progress
+	        	SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
 					@Override
 					protected Boolean doInBackground() throws Exception {
-						FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
+						try {
+							FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
+							publish(100);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							return false;
+						}
 						return true;
 					}
 					
@@ -162,16 +190,15 @@ public class SearchHandlers {
 							JOptionPane.showMessageDialog(null, "Download error!");
 							ex.printStackTrace();
 						}
-						//source.setEnabled(true);
 					}
 					
 					@Override
 					protected void process(List<Integer> n) {
-						//progressBar.setValue(n.get(n.size() - 1));
+						progressBar.setValue(n.get(n.size() - 1));
 					}
 				};
-	        	
-				worker.execute();*/
+				progressBar.setValue(5);
+				worker.execute();
 	        }
 		} else {
 			// maybe produce an error message

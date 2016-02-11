@@ -28,6 +28,7 @@ import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JProgressBar;
+import java.awt.Color;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -59,7 +60,8 @@ public class ClientWindow {
 	private JLabel lblMinimumMatches;
 	private JScrollPane scrollPane1;
 	private JCheckBox ckboxUseStemmer;
-	private JProgressBar progressBar;
+	private JProgressBar upProgress;
+	private JProgressBar downProgress;
 
 	/**
 	 * Launch the application.
@@ -131,9 +133,9 @@ public class ClientWindow {
 
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler(progressBar, filePath, ckboxUseStemmer));
-		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
-		list.addMouseListener(SearchHandlers.getListClickHandler());
+		btnUpload.addActionListener(UploadHandlers.getUploadHandler(upProgress, filePath, ckboxUseStemmer));
+		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(downProgress, list));
+		list.addMouseListener(SearchHandlers.getListClickHandler(downProgress));
 
 		// Add Handlers (Settings)
 		keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
@@ -188,12 +190,13 @@ public class ClientWindow {
 		btnUpload = new JButton("Upload");
 		uploadPanel.add(btnUpload, "cell 2 1");
 		
-		progressBar = new JProgressBar();
-		uploadPanel.add(progressBar, "cell 0 3 3 1");
+		upProgress = new JProgressBar();
+		upProgress.setForeground(new Color(0, 128, 0));
+		uploadPanel.add(upProgress, "cell 0 3 3 1");
 
 		searchPanel = new JPanel();
 		tabbedPane.addTab("Search", null, searchPanel, "Search");
-		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][][][grow]"));
+		searchPanel.setLayout(new MigLayout("", "[grow][fill]", "[fill][][][][grow][]"));
 
 		queryField = new HintTextField("Enter keywords here...");
 
@@ -226,6 +229,10 @@ public class ClientWindow {
 		matchSlider.setMajorTickSpacing(1);
 		matchSlider.setMaximum(1);
 		searchPanel.add(matchSlider, "cell 1 3");
+		
+		downProgress = new JProgressBar();
+		downProgress.setForeground(new Color(0, 128, 0));
+		searchPanel.add(downProgress, "cell 0 5 2 1,growx");
 
 		settingPanel = new JPanel();
 		tabbedPane.addTab("Settings", null, settingPanel, "Settings");

@@ -18,7 +18,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -121,12 +120,11 @@ public class FileUtils {
         }
     }
 
-    public static void downloadFile(String path, String id, SecretKey secretKey) {
+    public static void downloadFile(String path, String id, SecretKey secretKey) throws IOException {
         AmazonS3 s3 = getClient();
 
         GetObjectRequest objReq = new GetObjectRequest(BUCKET, id);
         File file = new File(path);
-
         //Decrypted method
         InputStream in = s3.getObject(objReq).getObjectContent();
         try {
@@ -186,8 +184,6 @@ public class FileUtils {
             
             System.out.println("Time elapsed: " + (System.currentTimeMillis() - start) + " ms");
             System.out.println("====Download Complete====");
-        } catch (IOException ex) {
-            ex.printStackTrace();
         } catch(InterruptedException e) {
         	Thread.currentThread().interrupt();
         }
