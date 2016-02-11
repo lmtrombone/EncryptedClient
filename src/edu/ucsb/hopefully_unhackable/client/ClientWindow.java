@@ -27,6 +27,7 @@ import javax.swing.SwingConstants;
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
+import javax.swing.JProgressBar;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -58,6 +59,7 @@ public class ClientWindow {
 	private JLabel lblMinimumMatches;
 	private JScrollPane scrollPane1;
 	private JCheckBox ckboxUseStemmer;
+	private JProgressBar progressBar;
 
 	/**
 	 * Launch the application.
@@ -129,7 +131,7 @@ public class ClientWindow {
 
 		// Add Handlers (Upload)
 		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler(filePath, ckboxUseStemmer));
+		btnUpload.addActionListener(UploadHandlers.getUploadHandler(progressBar, filePath, ckboxUseStemmer));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(list));
 		list.addMouseListener(SearchHandlers.getListClickHandler());
 
@@ -153,7 +155,7 @@ public class ClientWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame("Client");
+		frame = new JFrame("Grum - Secure File Client");
 		frame.setBounds(100, 100, 550, 350);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new MigLayout("", "[grow]", "[grow][grow,fill][][]"));
@@ -163,10 +165,10 @@ public class ClientWindow {
 
 		uploadPanel = new JPanel();
 		tabbedPane.addTab("Upload", null, uploadPanel, "Upload");
-		uploadPanel.setLayout(new MigLayout("", "[fill][grow,fill][fill]", "[fill][][grow,fill]"));
+		uploadPanel.setLayout(new MigLayout("", "[fill][grow,fill][fill]", "[fill][][grow,fill][]"));
 
-		JLabel lblNewLabel = new JLabel("Path:");
-		uploadPanel.add(lblNewLabel, "cell 0 0");
+		JLabel pathLbl = new JLabel("Path:");
+		uploadPanel.add(pathLbl, "cell 0 0");
 
 		filePath = new HintTextField("Enter file path here...");
 
@@ -185,6 +187,9 @@ public class ClientWindow {
 
 		btnUpload = new JButton("Upload");
 		uploadPanel.add(btnUpload, "cell 2 1");
+		
+		progressBar = new JProgressBar();
+		uploadPanel.add(progressBar, "cell 0 3 3 1");
 
 		searchPanel = new JPanel();
 		tabbedPane.addTab("Search", null, searchPanel, "Search");

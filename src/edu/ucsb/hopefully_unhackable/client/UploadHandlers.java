@@ -3,13 +3,16 @@ package edu.ucsb.hopefully_unhackable.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,11 +48,11 @@ public class UploadHandlers {
 		};
 	}
 	
-	public static ActionListener getUploadHandler(JTextField filePath, JCheckBox stem) {
+	public static ActionListener getUploadHandler(JProgressBar progressBar, JTextField filePath, JCheckBox stem) {
 		return new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (filePath.getText() != ""){
+				if (filePath.getText() != "") {
 					File fileFromType = new File(filePath.getText());
 					if(fileFromType.isAbsolute() && fileFromType.exists()){
 						ClientWindow.selectedFile = fileFromType;
@@ -61,26 +64,58 @@ public class UploadHandlers {
 					JOptionPane.showMessageDialog(null, "Please select a file");
 					return;
 				}
-						
-				ClientWindow.writeLog("Encrypting file...");
-				//for now uses same key to encrypt keywords
-				String key = UUID.randomUUID().toString();
-				Map<String, StringPair> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key, stem.isSelected());
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-					String json = mapper.writeValueAsString(map);
-					System.out.println(json);
-					ClientWindow.writeLog("Indexing file...");
-					HttpUtil.HttpPost(json);
-				} catch (JsonProcessingException e1) {
-					e1.printStackTrace();
-					ClientWindow.writeLog("Upload failed!");
-					return;
-				}
-                ClientWindow.writeLog("Uploading file...");
-                FileUtils.uploadFile(ClientWindow.selectedFile, key, AESCTR.secretKey);
-                ClientWindow.writeLog("Upload successful!");
-                JOptionPane.showMessageDialog(null, "Upload successfull!");
+				progressBar.setValue(0);
+				ClientWindow.writeLog("Uploading file...");
+				JButton source = (JButton) e.getSource();
+				source.setEnabled(false);
+				
+				SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						String key = UUID.randomUUID().toString();
+						publish(5);
+						Map<String, StringPair> map = SSE.EDBSetup(ClientWindow.selectedFile, AESCTR.secretKey, key, stem.isSelected());
+						publish(20);
+						ObjectMapper mapper = new ObjectMapper();
+		                try {
+							String json = mapper.writeValueAsString(map);
+							publish(50);
+							HttpUtil.HttpPost(json);
+							publish(60);
+						} catch (JsonProcessingException e1) {
+							e1.printStackTrace();
+							return false;
+						}
+		                
+		                FileUtils.uploadFile(ClientWindow.selectedFile, key, AESCTR.secretKey);
+		                publish(100);
+						return true;
+					}
+					
+					@Override
+					protected void done() {
+						try {
+							if (get()) {
+								ClientWindow.writeLog("Upload successful!");
+								JOptionPane.showMessageDialog(null, "Upload successful!");
+							} else {
+								ClientWindow.writeLog("Upload failed!");
+								JOptionPane.showMessageDialog(null, "Upload failed!");
+							}
+						} catch (Exception ex) {
+							JOptionPane.showMessageDialog(null, "Upload error!");
+							ex.printStackTrace();
+						}
+						source.setEnabled(true);
+					}
+					
+					@Override
+					protected void process(List<Integer> n) {
+						progressBar.setValue(n.get(n.size() - 1));
+					}
+				};
+				
+				worker.execute();
 			}
 		};
 	}
