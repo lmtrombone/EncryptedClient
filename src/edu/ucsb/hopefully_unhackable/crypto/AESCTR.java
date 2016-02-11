@@ -1,7 +1,6 @@
 package edu.ucsb.hopefully_unhackable.crypto;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -53,10 +52,7 @@ public class AESCTR {
         return iv;
     }
     
-    private static IvParameterSpec calculateIVForOffset(final IvParameterSpec iv,
-            final long blockOffset) {
-    	System.out.println("Offset " + blockOffset);
-        
+    private static IvParameterSpec calculateIVForOffset(final IvParameterSpec iv, final long blockOffset) {
         final BigInteger ivBI = new BigInteger(1, iv.getIV());
         final BigInteger ivForOffsetBI = ivBI.add(BigInteger.valueOf(blockOffset
                 / BLOCK_SIZE));

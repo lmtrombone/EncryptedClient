@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -128,10 +129,11 @@ public class SearchHandlers {
 		if (list.getSelectedIndex() >= 0) {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setApproveButtonText("Save");
-	        fileChooser.setDialogTitle("Select a file...");
+	        fileChooser.setDialogTitle("Choose a location...");
+	        fileChooser.setSelectedFile(new File(list.getSelectedValue().getFileName()));
 	        
 	        // file chooser to save file
-	        if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+	        if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 	        	//JOptionPane.showMessageDialog(null, "Downloading file: " + list.getSelectedValue() + "[" + list.getSelectedIndex() + "]");
 	        	String path = fileChooser.getSelectedFile().getAbsolutePath();
 				FileUtils.downloadFile(path, list.getSelectedValue().getFileId(), AESCTR.secretKey);
