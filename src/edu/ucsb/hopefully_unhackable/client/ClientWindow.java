@@ -29,6 +29,7 @@ import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JProgressBar;
 import java.awt.Color;
+import java.awt.Font;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -62,6 +63,7 @@ public class ClientWindow {
 	private JCheckBox ckboxUseStemmer;
 	private JProgressBar upProgress;
 	private JProgressBar downProgress;
+	private JLabel lblthisCreatesMore;
 
 	/**
 	 * Launch the application.
@@ -144,6 +146,10 @@ public class ClientWindow {
 		
 		// Add Handlers (Search)
 		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider, ckboxUseStemmer));
+		
+		lblthisCreatesMore = new JLabel("*This creates more leniency in searches, but also introduces some error");
+		lblthisCreatesMore.setFont(new Font("Dialog", Font.PLAIN, 9));
+		settingPanel.add(lblthisCreatesMore, "cell 0 2 3 1");
 		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
 		
 		searchPanel.getRootPane().setDefaultButton(btnSearch);
@@ -158,7 +164,7 @@ public class ClientWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame("Grum - Secure File Client");
-		frame.setBounds(100, 100, 550, 350);
+		frame.setBounds(100, 100, 575, 375);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new MigLayout("", "[grow]", "[grow][grow,fill][][]"));
 
@@ -218,6 +224,7 @@ public class ClientWindow {
 		searchPanel.add(btnDownload, "cell 1 1");
 		
 		lblMinimumMatches = new JLabel("Min Words to Match:");
+		lblMinimumMatches.setFont(new Font("Dialog", Font.PLAIN, 12));
 		searchPanel.add(lblMinimumMatches, "cell 1 2");
 		
 		matchSlider = new JSlider();
@@ -236,7 +243,7 @@ public class ClientWindow {
 
 		settingPanel = new JPanel();
 		tabbedPane.addTab("Settings", null, settingPanel, "Settings");
-		settingPanel.setLayout(new MigLayout("", "[grow][][]", "[28.00,fill][]"));
+		settingPanel.setLayout(new MigLayout("", "[grow][][79.00]", "[28.00,fill][][]"));
 
 		keyFile = new JComboBox<>();
 		settingPanel.add(keyFile, "cell 0 0,growx");

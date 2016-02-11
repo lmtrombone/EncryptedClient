@@ -26,6 +26,7 @@ public class SettingsHandlers {
 				
 				JComboBox<KeyItem> box = (JComboBox<KeyItem>) o;
 				AESCTR.secretKey = box.getItemAt(box.getSelectedIndex()).getKey();
+				SearchHandlers.cache.invalidateAll();
 				ClientWindow.writeLog("Successfully loaded key: " + box.getSelectedItem());
 			}
 		};
