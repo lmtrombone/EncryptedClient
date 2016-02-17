@@ -36,11 +36,11 @@ public class ClientWindow {
 	private JTabbedPane tabbedPane;
 	private JScrollPane scrollPane;
 	private static JTextArea outputLog;
-	public static File selectedFile; // TODO NO STATIC
+	public static File[] selectedFiles; // TODO NO STATIC
 
 	// Upload Tab
 	private JPanel uploadPanel;
-	private JTextField filePath;
+	private JTextField filePaths;
 	private JButton btnBrowse;
 	private JButton btnUpload;
 
@@ -134,8 +134,8 @@ public class ClientWindow {
 		}
 
 		// Add Handlers (Upload)
-		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePath));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler(upProgress, filePath, ckboxUseStemmer));
+		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePaths));
+		btnUpload.addActionListener(UploadHandlers.getUploadHandler(upProgress, ckboxUseStemmer));
 		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(downProgress, list));
 		list.addMouseListener(SearchHandlers.getListClickHandler(downProgress));
 
@@ -178,10 +178,10 @@ public class ClientWindow {
 		JLabel pathLbl = new JLabel("Path:");
 		uploadPanel.add(pathLbl, "cell 0 0");
 
-		filePath = new HintTextField("Enter file path here...");
+		filePaths = new HintTextField("Enter file path here...");
 
-		uploadPanel.add(filePath, "cell 1 0");
-		filePath.setColumns(10);
+		uploadPanel.add(filePaths, "cell 1 0");
+		filePaths.setColumns(10);
 
 		btnBrowse = new JButton("Browse...");
 		uploadPanel.add(btnBrowse, "cell 2 0");

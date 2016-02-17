@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
@@ -17,50 +19,47 @@ import edu.ucsb.hopefully_unhackable.utils.Stopper;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 
 public class SSE {
-	public static HashMap<String, StringPair> tSet;
-	//public static HashMap<String, ArrayList<String>> tSet;
+	public static HashMap<String, ArrayList<StringPair>> tSet;
 	
-	public static HashMap<String, StringPair> EDBSetup(File selectedFile, SecretKey kS, String key, boolean stem) {
+	public static HashMap<String, ArrayList<StringPair>> EDBSetup(File[] selectedFiles, SecretKey kS, String key, boolean stem) {
 		//TODO: Parse documents with indexing
-		String filename = selectedFile.getName();
-		Set<String> fileWords = readFile(selectedFile);
-		Set<String> stemWords = new HashSet<>();
-		for (String word : fileWords) {
-			if (Stopper.isStop(word)) continue;
-			if (stem) {
-				stemWords.add(Stemmer.getStem(word));
-			} else {
-				stemWords.add(word);
+		HashMap<Integer, Set<String>> fileStemWords = new HashMap<Integer, Set<String>>();
+		for(int i = 0; i < selectedFiles.length; i++) {
+			String filename = selectedFiles[i].getName();
+			Set<String> fileWords = readFile(selectedFiles[i]);
+			Set<String> stemWords = new HashSet<>();
+			for(String word : fileWords) {
+				if(Stopper.isStop(word)) continue;
+				if(stem) {
+					stemWords.add(Stemmer.getStem(word));
+				} else {
+					stemWords.add(word);
+				}
 			}
-		}
-		stemWords.add(com.google.common.io.Files.getNameWithoutExtension(filename));
-		//System.out.println(stemWords);
-		//tSet = new HashMap<String, ArrayList<String>>();
-		tSet = new HashMap<String, StringPair>();
-		for (String word : stemWords) {
-			SearchHandlers.cache.invalidate(word);
-			SecretKey kE = SHA3.createIndexingKey(kS, word);
-			
-			String encWord = SHA2.createIndexingString(kE, word).replace("+", "X"); // remove + signs TEMP FIX TODO
-			String encId = AESCTR.encrypt(key, kE);
-			String encName = AESCTR.encrypt(filename, kE);
-			//tSet.put(encryptedFileWords[i], encryptedIndex);
-			//String keyStr = Base64.getEncoder().encodeToString(kE.getEncoded());
-			//if(tSet.get(fileWords[i]) == null){
-				//tSet.put(fileWords[i], new ArrayList<String>());
-			//}
-			//tSet.get(fileWords[i]).add(encryptedIndex);
-			tSet.put(encWord, new StringPair(encId, encName));
+			stemWords.add(com.google.common.io.Files.getNameWithoutExtension(filename).toLowerCase());
+			//change later
+			fileStemWords.put(i, stemWords);
 		}
 		
-		//for (Entry<String, ArrayList<String>> entry : tSet.entrySet()) {
-			//String key = entry.getKey();
-			//System.out.println("Key: " + key);
-			//ArrayList <String> values = entry.getValue();
-			//for(int i = 0; i < values.size(); i++){
-				//System.out.println("Values: " + values.get(i));
-			//}
-		//}
+		tSet = new HashMap<String, ArrayList<StringPair>>();
+		for(Entry<Integer, Set<String>> entry : fileStemWords.entrySet()) {
+			Set<String> values = entry.getValue();
+			for(String word: values) {
+				SearchHandlers.cache.invalidate(word);
+				SecretKey kE = SHA3.createIndexingKey(kS, word);
+				
+				String encWord = SHA2.createIndexingString(kE, word).replace("+", "X");
+				String encId = AESCTR.encrypt(key, kE);
+				
+				String filename = selectedFiles[entry.getKey()].getName();
+				String encName = AESCTR.encrypt(filename, kE);
+				
+				if(!tSet.containsKey(encWord)) {
+					tSet.put(encWord, new ArrayList<StringPair>());
+				}
+				tSet.get(encWord).add(new StringPair(encId, encName));
+			}
+		}
 		
 		return tSet;
 	}
