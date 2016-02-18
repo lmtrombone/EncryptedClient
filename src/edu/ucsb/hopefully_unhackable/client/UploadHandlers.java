@@ -43,8 +43,8 @@ public class UploadHandlers {
 					JOptionPane.showMessageDialog(null, "Please generate or choose a key");
 					return;
 				}
-				if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-	            {
+				
+				if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 	                selectedFiles = fileChooser.getSelectedFiles();
 	                ClientWindow.writeLog("Selected files: ");
 	                StringBuilder sb = new StringBuilder(1024);
@@ -88,6 +88,7 @@ public class UploadHandlers {
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "Please select a file");
+					return;
 				}
 				
 				progressBar.setValue(0);
@@ -100,22 +101,26 @@ public class UploadHandlers {
 					protected Boolean doInBackground() throws Exception {
 						String key = UUID.randomUUID().toString();
 						publish(5);
+						
+						for (int i = 0; i < ClientWindow.selectedFiles.length; i++) {
+		                	FileUtils.uploadFile(ClientWindow.selectedFiles[i], key, AESCTR.secretKey);
+		                }
+						publish(40);
+						
 						Map<String, ArrayList<StringPair>> map = SSE.EDBSetup(ClientWindow.selectedFiles, AESCTR.secretKey, key, stem.isSelected());
-						publish(20);
+						publish(60);
+						
 						ObjectMapper mapper = new ObjectMapper();
 		                try {
 							String json = mapper.writeValueAsString(map);
-							publish(50);
+							publish(80);
 							HttpUtil.HttpPost(json);
-							publish(60);
 						} catch (JsonProcessingException e1) {
 							e1.printStackTrace();
 							return false;
 						}
 		                
-		                for(int i = 0; i < ClientWindow.selectedFiles.length; i++) {
-		                	FileUtils.uploadFile(ClientWindow.selectedFiles[i], key, AESCTR.secretKey); 
-		                }
+		                
 		                publish(100);
 						return true;
 					}

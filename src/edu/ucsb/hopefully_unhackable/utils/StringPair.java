@@ -1,34 +1,31 @@
 package edu.ucsb.hopefully_unhackable.utils;
 
-import edu.ucsb.hopefully_unhackable.client.KeyItem;
-
 // pair of (file id, file name)
 public class StringPair {
-	
 	private String fileId;
 	private String fileName;
 	
-	public StringPair(){}
+	public StringPair() { }
 	
-	public StringPair(String fileId, String fileName){
+	public StringPair(String fileId, String fileName) {
 		this.fileId = fileId;
 		this.fileName = fileName;
 
 	}
 	
-	public String getFileId(){
+	public String getFileId() {
 		return this.fileId;
 	}
 	
-	public void setFileId(String fileId){
+	public void setFileId(String fileId) {
 		this.fileId = fileId;
 	}
 
-	public String getFileName(){
+	public String getFileName() {
 		return this.fileName;
 	}
 	
-	public void setFileName(String fileName){
+	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 	
@@ -53,6 +50,4 @@ public class StringPair {
 	public String toString() {
 		return this.fileName;
 	}
-	
-	
 }

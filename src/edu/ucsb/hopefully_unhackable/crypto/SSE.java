@@ -27,6 +27,7 @@ public class SSE {
 		for(int i = 0; i < selectedFiles.length; i++) {
 			String filename = selectedFiles[i].getName();
 			Set<String> fileWords = readFile(selectedFiles[i]);
+			fileWords.add(com.google.common.io.Files.getNameWithoutExtension(filename).toLowerCase());
 			Set<String> stemWords = new HashSet<>();
 			for(String word : fileWords) {
 				if(Stopper.isStop(word)) continue;
@@ -36,7 +37,6 @@ public class SSE {
 					stemWords.add(word);
 				}
 			}
-			stemWords.add(com.google.common.io.Files.getNameWithoutExtension(filename).toLowerCase());
 			//change later
 			fileStemWords.put(i, stemWords);
 		}
