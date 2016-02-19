@@ -99,11 +99,12 @@ public class UploadHandlers {
 				SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
 					@Override
 					protected Boolean doInBackground() throws Exception {
-						String key = UUID.randomUUID().toString();
+						String[] key = new String[ClientWindow.selectedFiles.length];
 						publish(5);
 						
 						for (int i = 0; i < ClientWindow.selectedFiles.length; i++) {
-		                	FileUtils.uploadFile(ClientWindow.selectedFiles[i], key, AESCTR.secretKey);
+							key[i] = UUID.randomUUID().toString();
+		                	FileUtils.uploadFile(ClientWindow.selectedFiles[i], key[i], AESCTR.secretKey);
 		                }
 						publish(40);
 						
