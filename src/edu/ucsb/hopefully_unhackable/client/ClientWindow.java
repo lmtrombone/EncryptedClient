@@ -1,35 +1,13 @@
 package edu.ucsb.hopefully_unhackable.client;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import javax.crypto.SecretKey;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-
 import edu.ucsb.hopefully_unhackable.crypto.AESCTR;
 import edu.ucsb.hopefully_unhackable.utils.StringPair;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JProgressBar;
-import java.awt.Color;
-import java.awt.Font;
+
+import javax.crypto.SecretKey;
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
 
 public class ClientWindow {
 	private JFrame frame;
@@ -134,23 +112,23 @@ public class ClientWindow {
 		}
 
 		// Add Handlers (Upload)
-		btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePaths));
-		btnUpload.addActionListener(UploadHandlers.getUploadHandler(upProgress, ckboxUseStemmer));
-		btnDownload.addActionListener(SearchHandlers.getDownloadHandler(downProgress, list));
-		list.addMouseListener(SearchHandlers.getListClickHandler(downProgress));
+		//btnBrowse.addActionListener(UploadHandlers.getBrowseHandler(filePaths));
+		//btnUpload.addActionListener(UploadHandlers.getUploadHandler(upProgress, ckboxUseStemmer));
+		//btnDownload.addActionListener(SearchHandlers.getDownloadHandler(downProgress, list));
+		//list.addMouseListener(SearchHandlers.getListClickHandler(downProgress));
 
 		// Add Handlers (Settings)
-		keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
-		btnRemove.addActionListener(SettingsHandlers.removeKeyHandler(keyFile));
-		btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));
+		//keyFile.addActionListener(SettingsHandlers.selectKeyHandler());
+		//btnRemove.addActionListener(SettingsHandlers.removeKeyHandler(keyFile));
+		//btnKeygen.addActionListener(SettingsHandlers.getKeygenHandler(keyFile));
 		
 		// Add Handlers (Search)
-		btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider, ckboxUseStemmer));
+		//btnSearch.addActionListener(SearchHandlers.getSearchHandler(queryField, list, searchResults, matchSlider, ckboxUseStemmer));
 		
 		lblthisCreatesMore = new JLabel("*This creates more leniency in searches, but also introduces some error");
 		lblthisCreatesMore.setFont(new Font("Dialog", Font.PLAIN, 9));
 		settingPanel.add(lblthisCreatesMore, "cell 0 2 3 1");
-		matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
+		//matchSlider.addChangeListener(SearchHandlers.getMatchHandler(list, searchResults));
 		
 		searchPanel.getRootPane().setDefaultButton(btnSearch);
 	}

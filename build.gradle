@@ -4,7 +4,7 @@ apply plugin: 'idea'
 apply plugin: 'application'
 
 sourceSets.main.java.srcDirs = ['src']
-mainClassName = 'edu.ucsb.hopefully_unhackable.client.ClientWindow'
+mainClassName = 'edu.ucsb.hopefully_unhackable.client.FXClientWindow'
 
 jar {
     baseName = 'encryptedclient'
@@ -16,7 +16,6 @@ targetCompatibility = 1.8
 repositories {
     mavenCentral()
 }
-
 
 dependencies {
     compile("com.amazonaws:aws-java-sdk:1.10.35")
